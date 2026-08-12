@@ -1,0 +1,763 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-surface: #111318;
+  --color-accent: #1d4ed8;
+  --color-accent-soft: #3a5ce8;
+  /* Lighter tint of the same brand blue, used only for text-accent inside
+     dark sections (bg-ink/bg-surface) to meet WCAG AA 4.5:1 — see the
+     contrast-fix rules below. Not a new brand color, not used elsewhere. */
+  --color-accent-bright: #7c9cff;
+  --color-grey-900: #3a3d45;
+  --color-grey-700: #6b6f78;
+  --color-grey-500: #8b90a0;
+  --color-grey-300: #c4c8d2;
+  --color-grey-100: #f2f3f5;
+
+  /* Canonical brand-blue alias (Homepage Motion Refinement pass). Same values
+     as the existing --color-accent tokens above — this does NOT introduce a
+     new color system, it just gives the existing GraphikosX blue a single
+     documented name for the new interaction/glow system below. */
+  --gx-blue: var(--color-accent);
+  --gx-blue-soft: var(--color-accent-soft);
+  --gx-blue-bright: var(--color-accent-bright);
+}
+
+@theme inline {
+  --color-ink: var(--color-ink);
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-grey-900: var(--color-grey-900);
+  --color-grey-700: var(--color-grey-700);
+  --color-grey-500: var(--color-grey-500);
+  --color-grey-300: var(--color-grey-300);
+  --color-grey-100: var(--color-grey-100);
+  --font-display: "Manrope Variable", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* WCAG AA contrast fixes (Phase 2F accessibility audit, verified with
+   Lighthouse) — two brand tokens are tuned for one background but fail
+   4.5:1 on the other:
+     - text-grey-500 has strong contrast on dark sections (5.8–6.6:1 on
+       bg-ink/bg-surface) but only 3.18:1 on light sections (bg-paper/
+       bg-white/bg-grey-100). Darken it specifically inside light
+       containers rather than changing the shared token everywhere.
+     - text-accent has strong contrast on light backgrounds (6.7:1) but
+       only 2.77–3.13:1 on dark sections (bg-ink/bg-surface). Lighten it
+       specifically inside dark containers instead. */
+.bg-paper .text-grey-500,
+.bg-white .text-grey-500,
+.bg-grey-100 .text-grey-500 {
+  color: var(--color-grey-700);
+}
+
+.bg-ink .text-accent,
+.bg-surface .text-accent {
+  color: var(--color-accent-bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-body), ui-sans-serif, sans-serif;
+}
+
+/* Typography system ------------------------------------------------------
+   DISPLAY  -> .font-display (Manrope Variable, used for all headlines)
+   BODY     -> default body font (Inter Variable)
+   LABELS   -> .text-label (Inter Variable, uppercase, tracked, used for eyebrows/tags)
+   NUMBERS  -> .font-numeric (Inter Variable, tabular figures, used for step/index numerals)
+   BUTTONS  -> handled by Button.tsx directly on the body font, semibold
+------------------------------------------------------------------------- */
+
+.text-label {
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.font-numeric {
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ==========================================================================
+   Unified card motion grammar (Homepage Motion + Interaction Refinement).
+   ONE system, reused by every interactive homepage card:
+     - Light background cards  -> diffused BLUE glow that follows the cursor.
+     - Dark background cards   -> diffused WHITE glow + a small blue accent
+       edge (border/inset ring), so dark cards stay legible and on-brand.
+   Implemented as a radial-gradient positioned via --gx-glow-x/--gx-glow-y
+   custom properties (written from JS by GlowCard, rAF-throttled) rather than
+   a blur() filter over a large area — cheap to paint, no repaint storms.
+   Keyboard equivalence: :focus-within triggers the same glow at the card's
+   center (the CSS custom properties default to 50%/50%), so tabbing to a
+   card produces the same visual state as hovering it. Touch/mobile taps set
+   the same class via a pointerdown handler (see GlowCard.tsx) and auto-clear
+   after a short delay — there is no hover-only affordance anywhere.
+   ========================================================================== */
+.gx-card {
+  --gx-glow-x: 50%;
+  --gx-glow-y: 50%;
+  position: relative;
+  isolation: isolate;
+  /* Depth system (Phase 2G refinement, spec item 7): every card gets this
+     for free from the shared primitive — sections never hand-roll their own
+     hover:-translate-y/hover:shadow utilities anymore, so there is exactly
+     one place that defines "what a card hover feels like" site-wide. */
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(15, 18, 26, 0.03), 0 1px 3px rgba(15, 18, 26, 0.04);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s ease;
+}
+
+.gx-card:hover,
+.gx-card:focus-visible,
+.gx-card:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 28px -12px rgba(15, 18, 26, 0.16), 0 4px 10px -4px rgba(15, 18, 26, 0.08);
+}
+
+/* Dark cards deliberately skip the light-card box-shadow system entirely —
+   heavy black shadows barely read against bg-ink/bg-surface anyway, and the
+   spec explicitly asks for edge illumination instead. Elevation still
+   applies (a card should still feel like it "lifts"), just without a shadow
+   that would be invisible on a dark background. */
+.gx-card--dark {
+  box-shadow: none;
+}
+
+.gx-card--dark:hover,
+.gx-card--dark:focus-visible,
+.gx-card--dark:focus-within {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-card {
+    transition: box-shadow 0.001ms, border-color 0.001ms;
+  }
+  .gx-card:hover,
+  .gx-card:focus-visible,
+  .gx-card:focus-within {
+    transform: none;
+  }
+}
+
+.gx-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    260px circle at var(--gx-glow-x) var(--gx-glow-y),
+    rgba(29, 78, 216, 0.16),
+    transparent 72%
+  );
+  transition: opacity 0.4s ease;
+}
+
+.gx-card > .gx-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.gx-card.is-glowing::before,
+.gx-card:hover::before,
+.gx-card:focus-visible::before,
+.gx-card:focus-within::before {
+  opacity: 1;
+}
+
+/* Dark-background variant: white diffused glow + a small blue accent ring
+   instead of a blue glow (blue-on-dark would wash out against bg-ink/bg-surface). */
+.gx-card--dark::before {
+  background: radial-gradient(
+    260px circle at var(--gx-glow-x) var(--gx-glow-y),
+    rgba(255, 255, 255, 0.14),
+    transparent 72%
+  );
+}
+
+.gx-card--dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: box-shadow 0.4s ease;
+}
+
+.gx-card--dark.is-glowing::after,
+.gx-card--dark:hover::after,
+.gx-card--dark:focus-visible::after,
+.gx-card--dark:focus-within::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(124, 156, 255, 0.6),
+    0 0 0 1px rgba(29, 78, 216, 0.25);
+}
+
+.gx-card:focus-visible {
+  outline: 2px solid var(--gx-blue-bright);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-card::before,
+  .gx-card--dark::after {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Directional "energy sweep" — a reusable hover-triggered light travel used
+   wherever the spec asks for a sense of energy moving through a row/card in
+   a specific direction (Build/Grow/Scale rows: left -> right; the Mission
+   transformation cards: top -> bottom; Business Outcome rows: left -> right
+   from service to outcome). One CSS mechanism, three sections, instead of
+   three bespoke implementations — same "one recognizable interaction
+   language" principle as `.gx-card`. Pair with a `position:relative` +
+   `overflow:hidden` host (GlowCard's `.gx-card` already provides both) so
+   the sweep is clipped to the row/card it belongs to.
+   ========================================================================== */
+.gx-sweep {
+  overflow: hidden;
+}
+
+.gx-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(29, 78, 216, 0.16) 45%,
+    rgba(124, 156, 255, 0.26) 50%,
+    rgba(29, 78, 216, 0.16) 55%,
+    transparent
+  );
+  background-size: 220% 100%;
+  background-position: 130% 0;
+  opacity: 0;
+  transition: opacity 0.4s ease, background-position 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gx-sweep:hover::after,
+.gx-sweep:focus-visible::after,
+.gx-sweep:focus-within::after {
+  opacity: 1;
+  background-position: -30% 0;
+}
+
+/* Vertical variant — top to bottom, used by the Mission transformation
+   cards where the hover should read as "top state -> energy -> result". */
+.gx-sweep--vertical::after {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(29, 78, 216, 0.16) 45%,
+    rgba(124, 156, 255, 0.26) 50%,
+    rgba(29, 78, 216, 0.16) 55%,
+    transparent
+  );
+  background-size: 100% 220%;
+  background-position: 0 130%;
+}
+
+.gx-sweep--vertical:hover::after,
+.gx-sweep--vertical:focus-visible::after,
+.gx-sweep--vertical:focus-within::after {
+  background-position: 0 -30%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-sweep::after {
+    transition: opacity 0.001ms;
+  }
+}
+
+/* ==========================================================================
+   Reusable pill hover/focus interaction — the small rounded tags used across
+   the homepage (What Accumulates Along the Way, Build/Grow/Scale service
+   pills, and anywhere else a small tag needs the same restrained "premium"
+   feedback: modest scale, blue border, soft glow, smooth spring-like
+   easing back out). Two tone variants so the pill can sit on either a light
+   or a dark host without ever losing contrast.
+   ========================================================================== */
+.gx-pill {
+  /* Same restrained ease-out-expo curve as .gx-card (spec explicitly asks for
+     "smooth return, no bounce" on these pills) — a "back"/overshoot easing
+     was here previously and produced a visible bounce past the target scale;
+     this curve approaches 1.045 and stops, never overshooting it. */
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease, border-color 0.3s ease,
+    color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gx-pill:hover,
+.gx-pill:focus-visible {
+  transform: scale(1.045);
+}
+
+.gx-pill--light:hover,
+.gx-pill--light:focus-visible {
+  border-color: var(--gx-blue);
+  background-color: rgba(29, 78, 216, 0.06);
+  color: var(--gx-blue);
+  box-shadow: 0 0 0 1px rgba(29, 78, 216, 0.12), 0 6px 16px -6px rgba(29, 78, 216, 0.3);
+}
+
+.gx-pill--dark:hover,
+.gx-pill--dark:focus-visible {
+  border-color: var(--gx-blue-bright);
+  background-color: rgba(29, 78, 216, 0.85);
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(124, 156, 255, 0.4), 0 6px 18px -6px rgba(29, 78, 216, 0.55);
+}
+
+.gx-pill:focus-visible {
+  outline: 2px solid var(--gx-blue-bright);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-pill {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .gx-pill:hover,
+  .gx-pill:focus-visible {
+    transform: none;
+  }
+}
+
+/* Energy pulse used by connector lines / active-node travel (Industries
+   network, Vision journey pills, hub connectors). A single small dot
+   animated with CSS offset-path-free transform keyframes — no per-frame JS. */
+@keyframes gx-pulse-travel {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+.gx-energy-dot {
+  animation: gx-pulse-travel 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-energy-dot {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
+/* Vision section "India -> Global -> Category Leadership" liquid/energy
+   journey line. A flowing gradient (not a JS-positioned dot) so it needs no
+   width measurement and stays cheap (background-position is compositor
+   friendly at this scale). The line itself spans the full section width, so
+   the flow visibly continues past the last pill to the section edge. */
+.gx-journey-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--gx-blue) 12%,
+    var(--gx-blue-bright) 22%,
+    transparent 38%
+  );
+  background-size: 260% 100%;
+  animation: gx-journey-flow 4.5s linear infinite;
+}
+
+@keyframes gx-journey-flow {
+  0% {
+    background-position: 130% 0;
+  }
+  100% {
+    background-position: -130% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-journey-line {
+    animation: none;
+    background-position: 0% 0;
+  }
+}
+
+/* Floating WhatsApp button — a slow, subtle idle "breathing" scale, not a
+   bounce. Disabled entirely under prefers-reduced-motion by the global
+   `*, *::before, *::after` reduced-motion rule near the top of this file
+   (animation-duration is forced to ~0), so no separate override is needed. */
+@keyframes gx-whatsapp-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+.gx-whatsapp-breathe {
+  animation: gx-whatsapp-breathe 3.2s ease-in-out infinite;
+}
+
+.gx-whatsapp-breathe:hover,
+.gx-whatsapp-breathe:focus-visible {
+  animation-play-state: paused;
+}
+
+/* Hero 3D logo atmosphere — an extremely subtle GraphikosX-blue radial glow
+   behind the GX mark, separating it from the white background without
+   reading as a neon effect. The blur is baked into the gradient's own
+   falloff plus one static `filter: blur()` (rasterized once as its own
+   compositor layer); the only thing that ever animates afterwards is
+   `transform`, which is GPU-composited and costs nothing on the main
+   thread even while looping. */
+.gx-hero-glow {
+  position: absolute;
+  inset: -10%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(29, 78, 216, 0.16),
+    rgba(29, 78, 216, 0.06) 55%,
+    transparent 78%
+  );
+  filter: blur(48px);
+  opacity: 0.6;
+  animation: gx-hero-glow-drift 10s ease-in-out infinite;
+}
+
+@keyframes gx-hero-glow-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(1.5%, -2%, 0) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-hero-glow {
+    animation: none;
+  }
+}
+
+/* Blue-highlighted word "light sweep" — one gradient pass across accent text
+   after it reveals, driven by AnimatedText.tsx's ShineText (framer-motion
+   animates background-position once; this class supplies the gradient +
+   text-clip). Falls back to the plain solid accent blue instantly under
+   prefers-reduced-motion (ShineText sets background-position directly to
+   its resting value with duration 0 in that case, no animation needed here). */
+.gx-shine {
+  background-image: linear-gradient(110deg, var(--gx-blue) 30%, var(--gx-blue-bright) 45%, var(--gx-blue) 60%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================================================
+   Background motion system — THREE consistent styles reused across the
+   homepage (not bespoke per-section backgrounds). Each is a single
+   `aria-hidden` decorative div, `position:absolute; inset:0; z-index:0;
+   pointer-events:none`, meant to be the first child of a section that also
+   sets `relative overflow-hidden`; give the section's actual content
+   wrapper (usually `<Container>`) `relative z-10` so it paints above this
+   layer (a plain `position:static` child would otherwise still be painted
+   BELOW a positioned decorative sibling per CSS stacking rules, regardless
+   of DOM order — hence the explicit z-10, not just DOM placement).
+   Every style only ever animates `background-position`/`transform`
+   (compositor-friendly) and is disabled under prefers-reduced-motion by the
+   global reduced-motion rule near the top of this file.
+   ========================================================================== */
+
+/* STYLE A — light sections (bg-paper / bg-grey-100): near-imperceptible
+   blue blurred radial "mesh gradient" haze. Opacity intentionally in the
+   3–8% range from the spec — should read as depth, not as a visible shape. */
+.gx-bg-light-haze {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background:
+    radial-gradient(640px circle at 12% 18%, var(--gx-blue) 0%, transparent 62%),
+    radial-gradient(720px circle at 88% 78%, var(--gx-blue-bright) 0%, transparent 62%);
+  background-size: 160% 160%;
+  animation: gx-haze-drift 28s ease-in-out infinite;
+}
+
+@keyframes gx-haze-drift {
+  0%,
+  100% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  50% {
+    background-position: 6% 5%, 94% 95%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-bg-light-haze {
+    animation: none;
+  }
+}
+
+/* STYLE B — dark sections (bg-ink / bg-surface): subtle blue edge
+   illumination in two opposite corners with a very slow aurora-like drift.
+   Kept out of the text-bearing center of the section so it never touches
+   readability. */
+.gx-bg-dark-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background:
+    radial-gradient(50% 60% at 0% 0%, rgba(29, 78, 216, 0.22), transparent 72%),
+    radial-gradient(45% 55% at 100% 100%, rgba(124, 156, 255, 0.15), transparent 72%);
+  background-size: 140% 140%;
+  animation: gx-aurora-drift 24s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-bg-dark-aurora {
+    animation: none;
+  }
+}
+
+@keyframes gx-aurora-drift {
+  0%,
+  100% {
+    background-position: 0% 0%, 100% 100%;
+  }
+  50% {
+    background-position: 5% 4%, 95% 96%;
+  }
+}
+
+/* STYLE C — diagram/process sections (Customer Journey, Process,
+   Build/Grow/Scale): a faint animated connector grid — thin traced lines
+   drifting slowly, reading as "system", not decoration. */
+.gx-bg-diagram-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: linear-gradient(rgba(29, 78, 216, 0.9) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 78, 216, 0.9) 1px, transparent 1px);
+  background-size: 56px 56px;
+  animation: gx-grid-drift 34s linear infinite;
+}
+
+@keyframes gx-grid-drift {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 56px 56px, 56px 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-bg-diagram-grid {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Global cursor-reactive atmosphere (Phase 2G refinement). One decorative,
+   full-bleed `aria-hidden` layer per section (mounted via
+   CursorAtmosphere.tsx), positioned via a CSS custom property the component
+   writes directly to this element's `style` from a rAF-throttled
+   `pointermove` handler — never React state. Defaults to a centered glow
+   (50%/50%) before any pointer movement has been recorded, so there is
+   never an undefined/jarring first paint.
+   ========================================================================== */
+.gx-cursor-atmosphere {
+  --gx-cursor-x: 50%;
+  --gx-cursor-y: 50%;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(480px circle at var(--gx-cursor-x) var(--gx-cursor-y), rgba(29, 78, 216, 0.07), transparent 68%);
+  transition: background-position 0.2s linear;
+}
+
+/* Dark sections: slightly stronger blue (7-12% per spec) plus an extremely
+   faint white diffusion layered underneath it for depth — never enough to
+   reduce text contrast, since both layers fade to fully transparent well
+   before the section's text column. */
+.gx-cursor-atmosphere--dark {
+  background: radial-gradient(480px circle at var(--gx-cursor-x) var(--gx-cursor-y), rgba(124, 156, 255, 0.11), transparent 62%),
+    radial-gradient(560px circle at var(--gx-cursor-x) var(--gx-cursor-y), rgba(255, 255, 255, 0.035), transparent 72%);
+}
+
+/* Touch/small screens (Phase 2H spec item 36 — "no heavy pointer tracking;
+   use static/slow atmospheric gradients instead"): CursorAtmosphere.tsx
+   never attaches a pointermove listener below `pointer: fine`, so this is a
+   pure-CSS replacement, not a JS-driven one — a large, very slow
+   `background-position` drift across two fixed hotspots, standing in for
+   the pointer-tracked glow. `animation-play-state` defaults to `paused` and
+   is only set to `running` while `CursorAtmosphere.tsx`'s shared
+   IntersectionObserver marks the section `is-in-view`, so off-screen
+   sections do zero animation work (same "pause when off-screen"
+   requirement as the desktop path, just enforced via a CSS class instead
+   of skipped rAF writes). */
+@media (max-width: 1023px) {
+  .gx-cursor-atmosphere {
+    background-image: radial-gradient(440px circle, rgba(29, 78, 216, 0.055), transparent 68%);
+    background-repeat: no-repeat;
+    background-size: 220% 220%;
+    background-position: 22% 18%;
+    animation: gx-atmosphere-drift 32s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
+
+  .gx-cursor-atmosphere.is-in-view {
+    animation-play-state: running;
+  }
+
+  .gx-cursor-atmosphere--dark {
+    background-image: radial-gradient(440px circle, rgba(124, 156, 255, 0.09), transparent 62%),
+      radial-gradient(520px circle, rgba(255, 255, 255, 0.03), transparent 72%);
+    background-repeat: no-repeat, no-repeat;
+    background-size: 220% 220%, 220% 220%;
+    background-position: 22% 18%, 78% 82%;
+    animation-name: gx-atmosphere-drift-dark;
+  }
+}
+
+@keyframes gx-atmosphere-drift {
+  from {
+    background-position: 22% 18%;
+  }
+  to {
+    background-position: 74% 68%;
+  }
+}
+
+@keyframes gx-atmosphere-drift-dark {
+  from {
+    background-position: 22% 18%, 78% 82%;
+  }
+  to {
+    background-position: 70% 62%, 30% 34%;
+  }
+}
+
+/* prefers-reduced-motion is the hard override for both paths above: the
+   whole layer disappears rather than merely pausing, since it is purely
+   decorative (aria-hidden) and CursorAtmosphere.tsx also skips creating its
+   IntersectionObserver/listeners entirely in this case — belt-and-braces,
+   render-agnostic (the element still mounts identically for SSR/hydration;
+   only its paint is suppressed). */
+@media (prefers-reduced-motion: reduce) {
+  .gx-cursor-atmosphere {
+    display: none;
+  }
+}
+
+/* "GraphikosX connects the pieces" hub -> card arrival pulse (Real Problem
+   section). Fires once per card the moment HubConnectors' traveling energy
+   dot reaches it (timed in DigitalPresenceProblem.tsx to match), then
+   settles into a held blue border for as long as the hub stays active. */
+@keyframes gx-hub-connect-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.45);
+  }
+  45% {
+    box-shadow: 0 0 0 8px rgba(29, 78, 216, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0);
+  }
+}
+
+.gx-hub-connected {
+  animation: gx-hub-connect-pulse 0.7s ease-out;
+  border-color: rgba(29, 78, 216, 0.55) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-hub-connected {
+    animation: none;
+  }
+}
+
+/* Shared "step activation" pop used by ScrollActivationTimeline (Customer
+   Research Timeline + Process 01-05) and the Industries radial nodes — a
+   brief blue glow ring plays once, exactly when a step/node first becomes
+   active (re-applying the class restarts the CSS animation), on top of
+   whatever scale/color transition the component already does in Tailwind. */
+@keyframes gx-step-pop {
+  0% {
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.55);
+  }
+  55% {
+    box-shadow: 0 0 0 10px rgba(29, 78, 216, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(29, 78, 216, 0);
+  }
+}
+
+.gx-step-pulse {
+  animation: gx-step-pop 0.7s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-step-pulse {
+    animation: none;
+  }
+}

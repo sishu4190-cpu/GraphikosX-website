@@ -1,0 +1,58 @@
+# GraphikosX
+
+> GraphikosX is an AI-driven digital presence agency, founded by Prakash Pal. It combines strategy, branding, technology, content and AI to build authority, visibility, trust and scalable digital systems for businesses across 10 specialised industries, through 15 core services organised into Build, Grow and Scale.
+
+This file is a supplementary, machine-readable index for AI systems. It does not replace robots.txt, sitemap.xml, structured data (JSON-LD) or the site's semantic HTML — those remain the authoritative sources. Support for llms.txt varies across AI systems and is not guaranteed to affect citations or answers.
+
+## Primary pages
+
+- [Home](https://graphikosx.in/): Overview of GraphikosX — positioning, industries, services, founder.
+- [About](https://graphikosx.in/about): Why GraphikosX exists, what it believes, and its founder.
+- [Services](https://graphikosx.in/services): All 15 services, organised into Build, Grow and Scale.
+- [Industries](https://graphikosx.in/industries): All 10 industries GraphikosX works with, and why.
+- [Free Audit](https://graphikosx.in/free-audit): Request a free digital presence audit.
+- [Contact](https://graphikosx.in/contact): Get in touch with GraphikosX.
+
+## Services (Build)
+
+- [Brand Strategy](https://graphikosx.in/services/brand-strategy)
+- [Visual Identity](https://graphikosx.in/services/visual-identity)
+- [Business Websites](https://graphikosx.in/services/business-websites)
+- [Landing Pages](https://graphikosx.in/services/landing-pages)
+- [Digital Infrastructure](https://graphikosx.in/services/digital-infrastructure)
+
+## Services (Grow)
+
+- [Social Media Management](https://graphikosx.in/services/social-media-management)
+- [SEO](https://graphikosx.in/services/seo)
+- [Google Business Profile](https://graphikosx.in/services/google-business-profile)
+- [Content Production](https://graphikosx.in/services/content-production)
+- [LinkedIn & Personal Branding](https://graphikosx.in/services/linkedin-personal-branding)
+
+## Services (Scale)
+
+- [AI Automation](https://graphikosx.in/services/ai-automation)
+- [CRM Integration](https://graphikosx.in/services/crm-integration)
+- [Workflow Automation](https://graphikosx.in/services/workflow-automation)
+- [Lead Generation Systems](https://graphikosx.in/services/lead-generation-systems)
+- [Marketing Consultation](https://graphikosx.in/services/marketing-consultation)
+
+## Industries
+
+- [Industrial Manufacturing & Chemicals](https://graphikosx.in/industries/industrial-manufacturing-chemicals)
+- [Healthcare](https://graphikosx.in/industries/healthcare)
+- [Real Estate](https://graphikosx.in/industries/real-estate)
+- [Education & Coaching](https://graphikosx.in/industries/education-coaching)
+- [Architecture & Interior](https://graphikosx.in/industries/architecture-interior)
+- [Legal & Professional Services](https://graphikosx.in/industries/legal-professional-services)
+- [Fitness & Wellness](https://graphikosx.in/industries/fitness-wellness)
+- [Hospitality](https://graphikosx.in/industries/hospitality)
+- [Automotive & EV](https://graphikosx.in/industries/automotive-ev)
+- [Founders & Personal Brands](https://graphikosx.in/industries/founders-personal-brands)
+
+## Contact
+
+- Website: https://graphikosx.in
+- Sales: sales@graphikosx.in
+- Founder: Prakash Pal (prakash@graphikosx.in)
+- Instagram: https://www.instagram.com/graphikosx
