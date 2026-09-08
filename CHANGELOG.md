@@ -2021,3 +2021,136 @@ mode selection at each width, simulated touch-drag correctly spins/tilts
 the mark and activates the glow trail, native scroll is never blocked
 during a simultaneous drag, reduced-motion still renders zero canvases, and
 zero console errors throughout.
+
+## Real-device follow-up — mobile 3D hero quality/reflection, hero background-shape sweep, table arrow fix
+
+Four fixes from a real-phone testing pass, delivered together.
+
+### 1. Mobile 3D hero — render quality (`GXSceneLite.tsx`)
+
+Root cause of the reported blur: the phone-tier canvas capped
+`devicePixelRatio` at `[1, 1.2]`. Real phones commonly report a
+`devicePixelRatio` of 2–3, so the browser was rendering the WebGL buffer at
+roughly half the phone's native resolution and then upscaling it to fill
+the CSS-pixel-sized canvas — that upscale is what read as overall softness.
+This is a different mechanism from anti-aliasing (`gl.antialias`, which was
+already correctly enabled in both `GXScene.tsx` and `GXSceneLite.tsx`, and
+needed no change) — antialiasing only smooths edges of an already-correct
+render; it can't fix a render that's the wrong resolution to begin with.
+
+Raised the cap to `[1, 2]` — higher than even the desktop/tablet "full"
+scene's `[1, 1.6]`. That's intentional, not an oversight: the phone tier
+already drops its two most expensive subsystems entirely (the full-screen
+noise-shader atmosphere plane, and the Bloom/ChromaticAberration/Noise
+postprocessing stack — see that file's own header comment), which buys
+back exactly this kind of resolution headroom. The shaders actually running
+at the higher resolution are cheap ones — a lit metal material, a small
+baked-gradient plane, a low-poly particle field — not the expensive
+noise-based atmosphere shader.
+
+**Smoothness — an honest caveat, not a confirmed number.** This sandbox
+has no hardware GPU: WebGL here runs on a software rasterizer, so absolute
+frame rate measured in this environment (single digits even at the old,
+cheaper `1.2` cap) is not representative of any real device and can't be
+reported as a phone's frame rate. What the sandbox *can* show is a relative
+comparison: under identical conditions (same software renderer, same
+interaction script — simulated touch-drag plus a scroll-past), the `[1,2]`
+build ran at roughly 70% of the frame rate of the `[1,1.2]` build. Whether
+that ratio matters on a real phone depends on how much fill-rate headroom
+that phone's GPU has — which this sandbox cannot measure. Given the
+subsystem cuts already in place for this tier, `[1, 2]` is the reasoned
+choice, not a guess, but it has **not** been confirmed smooth on real
+mid-range hardware. If it stutters on an actual phone, the fallback is a
+one-line change (drop the cap back toward `1.5`, or make it depend on
+`navigator.deviceMemory`/a UA-based tier) — flag it and it'll be adjusted
+rather than shipped as a forced tradeoff.
+
+### 2. Reflection under the logo — thin line → rounded pool (`GXScene.tsx` + `GXSceneLite.tsx`)
+
+Root cause: the old reflection was a genuine 3D mesh — a vertically
+mirrored copy of the mark's own ring/blade geometry — nested inside the
+*same rotating group* as the mark itself. A flat, angular shape like that
+foreshortens to almost nothing from most rotation angles, exactly like a
+coin turned edge-on, which is why it read as "a thin line" rather than a
+pool during normal idle rotation or a drag. It also was never round to
+begin with — it was the letter-shaped silhouette, mirrored, so even
+face-on it never looked like a reflection pool.
+
+Replaced it with the same technique the (correctly-behaving) contact
+shadow already uses one mesh below it: a flat, camera-facing billboard
+plane textured with a baked, heavily-blurred radial-gradient canvas
+texture (blue-tinted, to read as the mark's own light pooling rather than
+a second shadow). A billboard plane can't foreshorten to a line no matter
+how the mark rotates, and a radial gradient is round/oval by construction
+— both problems fixed at the root, not by tuning opacity or size on the
+old approach. Applied identically to both the desktop/tablet scene and the
+phone scene, consistent with this project's convention of duplicating
+scene code between those two files rather than sharing it.
+
+### 3. Decorative background shapes removed from every hero — sitewide sweep
+
+You'd found four manually (Industries, Services, About, Contact). A full
+grep-based sweep across every hero-bearing page found **seven** removal
+sites, not four — the extra three were a shared "motif" component used
+across page *templates*, which is exactly the "one component used across
+heroes" you suspected existed:
+
+- `AboutHero.tsx` — inline SVG arc/circle, removed
+- `ContactHero.tsx` — inline SVG polygon, removed
+- `IndustriesHero.tsx` — inline SVG dashed circle, removed
+- `ServicesHero.tsx` — inline SVG triangle, removed
+- `FreeAuditHero.tsx` — inline SVG circle (not in your list — caught by
+  the sweep, not by manual browsing)
+- `IndustryHero.tsx` — usage of `StyleMotif`, a shared component with 10
+  shape variants (one per industry `visualStyle`), used on **all 10**
+  `/industries/[slug]` pages. This is almost certainly the pattern you
+  noticed repeating.
+- `ServiceHero.tsx` — usage of `GroupMotif`, the services-side equivalent,
+  used on **all ~15** `/services/[slug]` pages.
+
+`StyleMotif.tsx` and `GroupMotif.tsx` themselves were left in place (dead
+code, unused after these edits) rather than deleted, matching the
+minimal-footprint approach used elsewhere in this fix — only the usage
+that rendered them on a hero was removed. Confirmed clean, no edit needed:
+`WorkHero.tsx`, `LegalHero.tsx`, the homepage hero (`Hero.tsx`). One
+unrelated decorative glow was found on `Vision.tsx` (a homepage *content*
+section, not a hero) and deliberately left alone as out of scope for "hero
+background shapes."
+
+Nothing else on any of these seven files changed — headline, breadcrumbs,
+CTAs, and page content are untouched; each edit was a pure deletion of the
+decorative element (and its now-unused import, for the two motif-component
+cases).
+
+### 4. `/services` "Why This Grouping" table — arrow centering (`OutcomesMap.tsx`)
+
+Root cause: the row used `flex justify-between`, which only pins the
+*first* and *last* child to the row's edges and splits the leftover space
+across the two gaps — it visually centers the middle item (the arrow) only
+on rows where the left and right text happen to be the same width. Since
+"AI Automation" and "SEO" aren't the same width, the arrow drifted off
+-center.
+
+Restructured the row as a fixed-track CSS Grid
+(`grid-cols-[1fr_auto_1fr]`) with the arrow in the `auto` middle column.
+That column is always the row's true horizontal center regardless of how
+long the flanking text is — a structural fix, not a breakpoint-specific
+one, so it holds at every viewport width automatically rather than needing
+separate mobile/desktop logic. This directly answers the concern that past
+arrow-alignment fixes were checked on desktop and broke on mobile: this one
+was measured, not just eyeballed, at both.
+
+**Verification performed:** `npx tsc --noEmit` and a full `npm run build`
+both clean. `npm run lint` shows the same pre-existing, unrelated
+`react-hooks/purity`/`react-hooks/immutability` false-positives already
+present in the untouched files (`GXScene.tsx`, `WorkScene.tsx`,
+`FreeAuditWizard.tsx`, `IntroSequence.tsx`) — nothing new introduced by
+these changes. Headless-browser screenshots taken at 390×844 (mobile) and
+1440×900 (desktop) for all seven hero-shape pages plus one industry-detail
+and one service-detail page, confirming no shape remains and nothing else
+shifted. Arrow-centering measured programmatically (not just eyeballed) at
+both widths: all 7 table rows measured exactly 0px offset from the row's
+true center, both mobile and desktop. Reflection pool visually confirmed
+as a rounded blue-tinted shape (not a line) at multiple rotation angles,
+both scene tiers.
+

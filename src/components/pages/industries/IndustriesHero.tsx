@@ -6,9 +6,6 @@ import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 export function IndustriesHero() {
   return (
     <section className="relative overflow-hidden bg-paper pb-16 pt-12 md:pb-24 md:pt-16">
-      <svg aria-hidden viewBox="0 0 400 400" className="pointer-events-none absolute -right-24 -top-20 h-[420px] w-[420px] opacity-[0.05]">
-        <circle cx="200" cy="200" r="150" fill="none" stroke="#1D4ED8" strokeWidth="16" strokeDasharray="4 14" />
-      </svg>
       <CursorAtmosphere tone="light" />
 
       <Container className="relative">

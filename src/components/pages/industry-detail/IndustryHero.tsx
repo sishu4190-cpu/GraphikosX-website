@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/Button";
 import { TrackedFreeAuditButton } from "@/components/ui/TrackedFreeAuditButton";
 import { MaskReveal } from "@/components/motion/MaskReveal";
 import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
-import { StyleMotif } from "./StyleMotif";
 import type { IndustryDetail } from "@/lib/data/industry-details";
 
 export function IndustryHero({ detail, industryName }: { detail: IndustryDetail; industryName: string }) {
   return (
     <section className="relative overflow-hidden bg-paper pb-16 pt-12 md:pb-24 md:pt-16">
-      <StyleMotif style={detail.visualStyle} className="pointer-events-none absolute -right-20 -top-16 h-96 w-96 opacity-[0.05]" />
       <CursorAtmosphere tone="light" />
 
       <Container className="relative">

@@ -207,49 +207,43 @@ function useShadowTexture() {
 }
 
 /**
- * Minimal unlit shader for the reflection meshes: fades alpha from
- * `uOpacity` (capped at spec's 5-10% max) down to 0 over a short vertical
- * distance in the mark's own local space, so the mirrored copy reads as a
- * quick "gradient/mask" falloff rather than a full mirror image — per spec,
- * this is a suggestion of a reflective surface, not a real reflection.
- * A custom ShaderMaterial (rather than a texture-based fade) needs no extra
- * render target or postprocessing pass — just a per-vertex varying, so it
- * costs about the same as the plain material it replaces.
+ * Soft, heavily-blurred radial-gradient canvas texture for the reflection
+ * pool beneath the mark — same baked-gradient technique as the contact
+ * shadow above (`useShadowTexture`), tinted with the brand's rim-light blue
+ * instead of near-black, so it reads as the mark's own light pooling on a
+ * surface rather than a second shadow.
+ *
+ * Replaces a previous version that mirrored the mark's own G+X geometry
+ * vertically with an alpha-faded shader. That looked like "a thin line"
+ * rather than a reflection pool for a structural reason, not just a tuning
+ * one: it was a genuine 3D mesh nested inside the SAME rotating group as
+ * the mark, so at most rotation angles (mid-drag, mid-idle-spin) it
+ * presented almost no cross-section to the camera — a mostly-flat shape
+ * foreshortens to near-nothing from the side, same as a coin turned edge-on
+ * disappears. It also was never round/oval to begin with — it was the
+ * letter-shaped silhouette, mirrored, so even face-on it never read as "a
+ * pool". A camera-facing billboard plane (below) can't foreshorten to a
+ * line no matter how the mark itself rotates — exactly why the contact
+ * shadow was already built this way (see that mesh's own comment) — and a
+ * radial gradient is round/oval by construction.
  */
-function useReflectionMaterial() {
-  return useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        uniforms: {
-          uColor: { value: new THREE.Color("#05060a") },
-          uOpacity: { value: 0.09 },
-          uMinY: { value: SHAPE_MIN_Y },
-          uFadeRange: { value: 0.85 },
-        },
-        vertexShader: `
-          varying float vY;
-          void main() {
-            vY = position.y;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 uColor;
-          uniform float uOpacity;
-          uniform float uMinY;
-          uniform float uFadeRange;
-          varying float vY;
-          void main() {
-            float t = clamp((vY - uMinY) / uFadeRange, 0.0, 1.0);
-            gl_FragColor = vec4(uColor, uOpacity * (1.0 - t));
-          }
-        `,
-      }),
-    []
-  );
+function useReflectionPoolTexture() {
+  return useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    gradient.addColorStop(0, "rgba(29,78,216,0.55)");
+    gradient.addColorStop(0.5, "rgba(29,78,216,0.22)");
+    gradient.addColorStop(1, "rgba(29,78,216,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
 }
 
 // ---------------------------------------------------------------------------
@@ -268,7 +262,7 @@ function useReflectionMaterial() {
 // table, no permutation lookups), visually indistinguishable at the very
 // low opacity/blur this is used at, and zero risk of a subtly-wrong port of
 // someone else's GLSL. No new npm dependency either way — this is plain
-// GLSL source, same as useReflectionMaterial() above.
+// GLSL source, same as the shadow/reflection canvas-texture gradients above.
 // ---------------------------------------------------------------------------
 const NOISE_GLSL = `
   float hash(vec2 p) {
@@ -449,6 +443,7 @@ function GXForm({
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const shadow = useRef<THREE.Mesh>(null);
+  const reflection = useRef<THREE.Mesh>(null);
   const current = useRef({ x: 0, y: 0 });
   // Idle auto-rotation is now accumulated into its own persistent angle
   // (rather than written straight to `inner.rotation.y` each frame) so a
@@ -472,7 +467,7 @@ function GXForm({
   const bladeAGeo = useTracedGeometry(BLADE_A_OUTLINE, 0.3, false);
   const bladeBGeo = useTracedGeometry(BLADE_B_OUTLINE, 0.3, false);
   const shadowTexture = useShadowTexture();
-  const reflectionMaterial = useReflectionMaterial();
+  const reflectionTexture = useReflectionPoolTexture();
   const atmosphereMaterial = useAtmosphereMaterial();
   const particleGeo = useParticleGeometry();
   const particleMaterial = useParticleMaterial();
@@ -555,6 +550,15 @@ function GXForm({
       shadow.current.position.x = current.current.y * 0.16 * scaleFactorValue;
       shadow.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.1);
     }
+
+    // Reflection pool: same "flat camera-facing billboard, nudged not
+    // rotated" treatment as the shadow just above, for the same reason —
+    // see useReflectionPoolTexture()'s comment for why this replaced a
+    // rotating mirrored-geometry mesh.
+    if (reflection.current) {
+      reflection.current.position.x = current.current.y * 0.16 * scaleFactorValue;
+      reflection.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.08);
+    }
   });
 
   return (
@@ -580,21 +584,28 @@ function GXForm({
           <mesh geometry={ringGeo} material={material} castShadow receiveShadow />
           <mesh geometry={bladeAGeo} material={material} position={[0, 0, -0.02]} castShadow receiveShadow />
           <mesh geometry={bladeBGeo} material={material} position={[0, 0, 0.05]} castShadow receiveShadow />
-
-          {/* Subtle reflection: the same three meshes, mirrored vertically
-              across the mark's true bottom edge (SHAPE_MIN_Y) and rendered
-              with the fast-fading, capped-opacity shader above. Nested
-              inside `inner` so it turns gently together with the mark's own
-              idle rotation ("may respond slightly to rotation" per spec) —
-              intentionally NOT wired to the mouse-tilt beyond what it
-              inherits here, keeping its motion restrained. */}
-          <group position={[0, 2 * SHAPE_MIN_Y, 0]} scale={[1, -1, 1]}>
-            <mesh geometry={ringGeo} material={reflectionMaterial} />
-            <mesh geometry={bladeAGeo} material={reflectionMaterial} position={[0, 0, -0.02]} />
-            <mesh geometry={bladeBGeo} material={reflectionMaterial} position={[0, 0, 0.05]} />
-          </group>
         </group>
       </group>
+
+      {/* Reflection pool — a flat, camera-facing billboard with a
+          blue-tinted radial-gradient texture, positioned just beneath the
+          mark and just in front of (closer to camera than) the contact
+          shadow below, so it layers as a brighter, tighter pool of light
+          sitting inside the shadow's broader, darker spread. Deliberately
+          NOT nested inside `group`/`inner` — see useReflectionPoolTexture's
+          comment for why a billboard (not a rotating mirrored mesh) is what
+          keeps this reading as an oval reflection at every rotation angle,
+          same reasoning as the contact shadow just below. */}
+      {reflectionTexture && (
+        <mesh
+          ref={reflection}
+          position={[0, (SHAPE_MIN_Y - 0.28) * scaleFactorValue, -0.3]}
+          scale={[scaleFactorValue, scaleFactorValue, 1]}
+        >
+          <planeGeometry args={[SHAPE_HALF_WIDTH * 2.1, SHAPE_HALF_WIDTH * 0.85]} />
+          <meshBasicMaterial map={reflectionTexture} transparent opacity={0.6} depthWrite={false} />
+        </mesh>
+      )}
 
       {/* Contact shadow — a heavily-blurred, low-opacity radial gradient on
           a flat camera-facing plane positioned just beneath the mark. This

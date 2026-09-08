@@ -147,40 +147,36 @@ function useShadowTexture() {
   }, []);
 }
 
-function useReflectionMaterial() {
-  return useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-        uniforms: {
-          uColor: { value: new THREE.Color("#05060a") },
-          uOpacity: { value: 0.09 },
-          uMinY: { value: SHAPE_MIN_Y },
-          uFadeRange: { value: 0.85 },
-        },
-        vertexShader: `
-          varying float vY;
-          void main() {
-            vY = position.y;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        fragmentShader: `
-          uniform vec3 uColor;
-          uniform float uOpacity;
-          uniform float uMinY;
-          uniform float uFadeRange;
-          varying float vY;
-          void main() {
-            float t = clamp((vY - uMinY) / uFadeRange, 0.0, 1.0);
-            gl_FragColor = vec4(uColor, uOpacity * (1.0 - t));
-          }
-        `,
-      }),
-    []
-  );
+/**
+ * Soft, heavily-blurred radial-gradient canvas texture for the reflection
+ * pool beneath the mark — same baked-gradient technique as the contact
+ * shadow above (`useShadowTexture`), tinted with the brand's rim-light blue
+ * instead of near-black, so it reads as the mark's own light pooling on a
+ * surface rather than a second shadow.
+ *
+ * Identical to GXScene.tsx's `useReflectionPoolTexture()` — see that file's
+ * comment for why this replaced a rotating mirrored-geometry mesh (it
+ * foreshortened to near-nothing at most rotation angles, exactly like a
+ * coin turned edge-on, and was never round to begin with since it was the
+ * letter-shaped silhouette itself, mirrored).
+ */
+function useReflectionPoolTexture() {
+  return useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    gradient.addColorStop(0, "rgba(29,78,216,0.55)");
+    gradient.addColorStop(0.5, "rgba(29,78,216,0.22)");
+    gradient.addColorStop(1, "rgba(29,78,216,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
 }
 
 // Roughly half of GXScene.tsx's 180 — the particle field itself was already
@@ -259,6 +255,7 @@ function GXFormLite({
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const shadow = useRef<THREE.Mesh>(null);
+  const reflection = useRef<THREE.Mesh>(null);
   const current = useRef({ x: 0, y: 0 });
   const idleAngle = useRef(0);
   const { viewport } = useThree();
@@ -268,7 +265,7 @@ function GXFormLite({
   const bladeAGeo = useTracedGeometry(BLADE_A_OUTLINE, 0.3, false);
   const bladeBGeo = useTracedGeometry(BLADE_B_OUTLINE, 0.3, false);
   const shadowTexture = useShadowTexture();
-  const reflectionMaterial = useReflectionMaterial();
+  const reflectionTexture = useReflectionPoolTexture();
   const particleGeo = useParticleGeometry();
   const particleMaterial = useParticleMaterial();
 
@@ -312,6 +309,15 @@ function GXFormLite({
       shadow.current.position.x = current.current.y * 0.16 * scaleFactorValue;
       shadow.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.1);
     }
+
+    // Reflection pool: same "flat camera-facing billboard, nudged not
+    // rotated" treatment as the shadow just above, for the same reason —
+    // see useReflectionPoolTexture()'s comment for why this replaced a
+    // rotating mirrored-geometry mesh.
+    if (reflection.current) {
+      reflection.current.position.x = current.current.y * 0.16 * scaleFactorValue;
+      reflection.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.08);
+    }
   });
 
   return (
@@ -325,14 +331,19 @@ function GXFormLite({
           <mesh geometry={ringGeo} material={material} castShadow receiveShadow />
           <mesh geometry={bladeAGeo} material={material} position={[0, 0, -0.02]} castShadow receiveShadow />
           <mesh geometry={bladeBGeo} material={material} position={[0, 0, 0.05]} castShadow receiveShadow />
-
-          <group position={[0, 2 * SHAPE_MIN_Y, 0]} scale={[1, -1, 1]}>
-            <mesh geometry={ringGeo} material={reflectionMaterial} />
-            <mesh geometry={bladeAGeo} material={reflectionMaterial} position={[0, 0, -0.02]} />
-            <mesh geometry={bladeBGeo} material={reflectionMaterial} position={[0, 0, 0.05]} />
-          </group>
         </group>
       </group>
+
+      {reflectionTexture && (
+        <mesh
+          ref={reflection}
+          position={[0, (SHAPE_MIN_Y - 0.28) * scaleFactorValue, -0.3]}
+          scale={[scaleFactorValue, scaleFactorValue, 1]}
+        >
+          <planeGeometry args={[SHAPE_HALF_WIDTH * 2.1, SHAPE_HALF_WIDTH * 0.85]} />
+          <meshBasicMaterial map={reflectionTexture} transparent opacity={0.6} depthWrite={false} />
+        </mesh>
+      )}
 
       {shadowTexture && (
         <mesh
@@ -378,11 +389,22 @@ export default function GXSceneLite() {
     <div className="absolute inset-0">
       <Canvas
         className="!absolute inset-0"
-        // Capped lower than the full scene's [1, 1.6] — one of this tier's
-        // two small extra-margin cuts (see file header). Phones' higher
-        // typical devicePixelRatio (2-3x) means an uncapped-further value
-        // here would matter a lot more than it does on desktop.
-        dpr={[1, 1.2]}
+        // Real-device testing on a mid-range phone showed [1, 1.2] read as
+        // soft/blurry: capping dpr well below a phone's real
+        // devicePixelRatio (commonly 2-3x) forces the browser to upscale a
+        // genuinely lower-resolution buffer to fill the CSS-pixel-sized
+        // canvas, which shows up as overall softness — a different problem
+        // from anti-aliasing (`gl.antialias` below), which only smooths
+        // edges and was already correctly enabled.
+        //
+        // Raised to [1, 2] — higher than even the desktop/tablet "full"
+        // scene's [1, 1.6] — because this tier already cuts its two most
+        // GPU-expensive subsystems entirely (the atmosphere plane and the
+        // postprocessing stack, see file header), which buys exactly this
+        // kind of resolution headroom back. Verified smooth (no dropped
+        // frames under simulated touch-drag) at this value; see the
+        // delivery notes for the mid-range-device caveat.
+        dpr={[1, 2]}
         gl={{ antialias: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 0, 6.4], fov: 40 }}
         onCreated={() => setReady(true)}

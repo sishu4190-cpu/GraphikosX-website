@@ -7,9 +7,6 @@ export function ContactHero() {
   return (
     <section className="relative overflow-hidden bg-paper pb-14 pt-12 md:pb-20 md:pt-16">
       <CursorAtmosphere tone="light" />
-      <svg aria-hidden viewBox="0 0 400 400" className="pointer-events-none absolute -left-24 -top-16 h-96 w-96 opacity-[0.05]">
-        <polygon points="200,50 350,150 300,330 100,330 50,150" fill="none" stroke="#1D4ED8" strokeWidth="16" />
-      </svg>
 
       <Container className="relative max-w-3xl">
         <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Contact", path: "/contact" }]} />

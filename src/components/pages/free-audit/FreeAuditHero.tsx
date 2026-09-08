@@ -5,10 +5,6 @@ import { MaskReveal } from "@/components/motion/MaskReveal";
 export function FreeAuditHero() {
   return (
     <section className="relative overflow-hidden bg-paper pb-14 pt-12 md:pb-20 md:pt-16">
-      <svg aria-hidden viewBox="0 0 400 400" className="pointer-events-none absolute -right-24 -top-20 h-96 w-96 opacity-[0.05]">
-        <circle cx="200" cy="200" r="150" fill="none" stroke="#1D4ED8" strokeWidth="16" />
-      </svg>
-
       <Container className="relative max-w-3xl">
         <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Free Audit", path: "/free-audit" }]} />
 

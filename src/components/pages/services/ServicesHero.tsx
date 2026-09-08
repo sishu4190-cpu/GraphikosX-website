@@ -6,9 +6,6 @@ import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 export function ServicesHero() {
   return (
     <section className="relative overflow-hidden bg-paper pb-20 pt-12 md:pb-28 md:pt-16">
-      <svg aria-hidden viewBox="0 0 400 400" className="pointer-events-none absolute -right-20 -top-16 h-96 w-96 opacity-[0.05]">
-        <polygon points="200,60 320,300 80,300" fill="none" stroke="#1D4ED8" strokeWidth="18" />
-      </svg>
       <CursorAtmosphere tone="light" />
 
       <Container className="relative">
