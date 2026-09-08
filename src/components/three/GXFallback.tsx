@@ -6,11 +6,21 @@ import { useEffect, useRef } from "react";
  * Branded 2.5D fallback for the GX hero — used when WebGL is unavailable,
  * the device is low-power, the viewport is small, or the user prefers
  * reduced motion. Renders the exact same traced silhouette as the 3D scene
- * (GXScene.tsx) — the ring and blade polygons below come from the same
+ * (GXScene.tsx) — the ring and blade points below come from the same
  * source-of-truth extraction against the official logo PNG, just kept in
  * their original pixel-space coordinates (viewBox matches the source
  * canvas) instead of the 3D scene's normalized/centered units. Layered SVG
  * with a lightweight pointer-parallax effect instead of a Three.js canvas.
+ *
+ * The ring is a `<path>`, not a `<polygon>`, using the same arc-based path
+ * data as `IntroSequence.tsx`'s `RING_PATH` — two true circular arcs (SVG
+ * `A` commands) for the ring's curved inner/outer edges, joined by two
+ * straight cut faces at the G's terminus, fit from the same 26 traced
+ * points as `GXScene.tsx`'s `RING_ARC` uses for the 3D hero. See that file's
+ * doc comment for the full derivation (why a plain spline through the
+ * traced points still didn't read as a *true* circle, and how the arcs were
+ * fit). The X blades stay `<polygon>`s — they're genuinely straight-sided
+ * in the source logo.
  */
 export function GXFallback() {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -52,6 +62,16 @@ export function GXFallback() {
 
   return (
     <div ref={wrapRef} className="absolute inset-0 flex items-center justify-center overflow-hidden">
+      {/* Phase 6 (hero atmosphere) note: the 3D hero gained a soft
+          liquid-noise glow + drifting particle field behind the mark
+          (GXScene.tsx). This fallback stays pure CSS on purpose — never a
+          WebGL fallback for a WebGL fallback — but a single extra, slower,
+          differently-positioned radial layer keeps it from reading as
+          comparatively flat now that the 3D version has more depth behind
+          it. Purely decorative (aria-hidden), respects the sitewide
+          prefers-reduced-motion rule in globals.css exactly like the
+          existing `.gx-hero-glow` this sits alongside. */}
+      <div aria-hidden className="gx-hero-glow-secondary" />
       <svg viewBox="0 0 941 932" className="h-[72%] w-[72%] max-w-lg" aria-hidden>
         <defs>
           <linearGradient id="gxRimLine" x1="0" y1="1" x2="1" y2="0">
@@ -63,13 +83,15 @@ export function GXFallback() {
           </filter>
         </defs>
 
-        {/* G ring — traced outline, deepest parallax layer */}
+        {/* G ring — smooth traced outline (see file doc comment), deepest
+            parallax layer */}
         <g ref={(el) => { layersRef.current[0] = el; }} filter="url(#gxSoftShadow)">
-          <polygon
-            points="461,207 380,202 306,227 240,284 201,362 194,447 216,520 268,588 341,629 388,577 353,567 315,544 286,513 268,479 259,401 272,357 293,323 334,288 400,268 462,279 491,297 514,323 589,323 569,283 540,250 503,224"
+          <path
+            d="M 341.73,626.68 L 388.55,572.31 A 152.07 152.07 0 1 1 518.60,318.80 L 595.86,319.31 A 215.30 215.30 0 1 0 341.73,626.68 Z"
             fill="#0a0a0c"
             stroke="url(#gxRimLine)"
             strokeWidth="2"
+            strokeLinejoin="round"
           />
         </g>
 

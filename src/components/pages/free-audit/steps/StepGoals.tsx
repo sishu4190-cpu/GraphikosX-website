@@ -29,7 +29,7 @@ export function StepGoals({
         name="goalsDetail"
         value={form.goalsDetail}
         onChange={(v) => update("goalsDetail", v)}
-        placeholder="Optional — add any detail that helps us understand your priorities."
+        placeholder="Optional: add any detail that helps us understand your priorities."
         maxLength={1000}
       />
     </div>

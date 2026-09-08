@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLenis } from "lenis/react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/motion/Reveal";
@@ -120,9 +121,24 @@ export function FreeAuditWizard() {
 
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
 
+  // Phase 3 (Lenis): once Lenis is smoothing wheel-driven scroll sitewide, a
+  // raw `window.scrollTo` here gets fought/overridden by Lenis's own RAF
+  // loop mid-animation (verified: without this, the wizard silently stopped
+  // scrolling to top on step change). `useLenis()` returns the active
+  // instance when Lenis is mounted (or `undefined` under
+  // prefers-reduced-motion, where SmoothScrollProvider never mounts it at
+  // all) — route the scroll through it when present, and fall back to the
+  // exact previous native call otherwise, so behavior is unchanged for
+  // reduced-motion users.
+  const lenis = useLenis();
+
   const goToStep = (index: number) => {
     setStep(index);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    if (lenis) {
+      lenis.scrollTo(0, { duration: 1 });
+    } else if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   // Move focus to the step heading whenever the step changes, so screen

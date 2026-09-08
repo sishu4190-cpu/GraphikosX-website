@@ -20,7 +20,7 @@ export function SubmitFallback({
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-ink/10 bg-grey-100/60 px-4 py-3">
       <p className="w-full text-xs text-grey-600">
-        Nothing you entered is lost — continue the conversation directly instead:
+        Nothing you entered is lost. Continue the conversation directly instead:
       </p>
       <Button
         href={fallback.whatsappUrl}

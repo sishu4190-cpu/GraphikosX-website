@@ -149,7 +149,7 @@ export function IndustriesSystem() {
                   style={{ left: pos.x, top: pos.y }}
                 >
                   {String(i + 1).padStart(2, "0")}
-                  <span className="sr-only"> — {industry.name}</span>
+                  <span className="sr-only">: {industry.name}</span>
                 </Link>
               );
             })}

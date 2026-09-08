@@ -22,7 +22,7 @@ export function IndustryChallenges({ detail, industryName }: { detail: IndustryD
         <SectionHeader
           eyebrow="Five Current Challenges"
           title={`What actually gets in the way for ${industryName.toLowerCase()} businesses today.`}
-          description="Not generic marketing problems — the specific friction this industry deals with."
+          description="Not generic marketing problems: the specific friction this industry deals with."
         />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {detail.challenges.map((challenge, i) => (

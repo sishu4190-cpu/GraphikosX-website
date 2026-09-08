@@ -6,7 +6,7 @@ import { ContactChannels } from "@/components/pages/contact/ContactChannels";
 import { ContactForm } from "@/components/pages/contact/ContactForm";
 
 const PATH = "/contact";
-const TITLE = "Contact GraphikosX — The AI-Driven Agency";
+const TITLE = "Contact GraphikosX | The AI-Driven Agency";
 const DESCRIPTION =
   "Reach GraphikosX directly on WhatsApp, phone or email, or send a short message about your project. We're a remote-first team and reply as soon as we can.";
 

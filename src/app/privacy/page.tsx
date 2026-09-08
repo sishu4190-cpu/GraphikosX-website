@@ -10,11 +10,11 @@ const TITLE = "Privacy Policy";
 const DESCRIPTION = "How GraphikosX collects, uses and protects the information you share through this website.";
 const UPDATED = "11 August 2026";
 
-export const metadata: Metadata = buildMetadata({ title: `${TITLE} — GraphikosX`, description: DESCRIPTION, path: PATH, noIndex: true });
+export const metadata: Metadata = buildMetadata({ title: `${TITLE} | GraphikosX`, description: DESCRIPTION, path: PATH, noIndex: true });
 
 export default function PrivacyPage() {
   const schema = pageSchemaGraph([
-    webPageSchema({ id: "privacy", name: `${TITLE} — GraphikosX`, description: DESCRIPTION, path: PATH }),
+    webPageSchema({ id: "privacy", name: `${TITLE} | GraphikosX`, description: DESCRIPTION, path: PATH }),
     breadcrumbSchema([
       { name: "Home", path: "/" },
       { name: TITLE, path: PATH },

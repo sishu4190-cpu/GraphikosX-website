@@ -26,7 +26,18 @@ export function IndustryEcosystem({ detail, industryName }: { detail: IndustryDe
                 <p className="font-display text-sm font-bold text-paper md:max-w-[9rem]">{node}</p>
               </div>
               {i < detail.ecosystem.length - 1 && (
-                <span aria-hidden className="mx-4 hidden text-accent md:block">
+                // Alignment fix: this arrow is a flex sibling of the
+                // circle+label column, which is taller than the circle
+                // alone (label text wraps below it). Left to the parent's
+                // `items-center`, the arrow centers against that whole
+                // column instead of the circle itself, landing visibly
+                // below the circle's true center. `md:self-start md:mt-2`
+                // anchors it to the top of the column with a fixed offset
+                // (half the circle's own height, h-10 = 40px, minus half
+                // the arrow's own line height) so it lines up with the
+                // circle's center regardless of how many lines the label
+                // below it wraps to.
+                <span aria-hidden className="mx-4 hidden text-accent md:block md:mt-2 md:self-start">
                   &rarr;
                 </span>
               )}

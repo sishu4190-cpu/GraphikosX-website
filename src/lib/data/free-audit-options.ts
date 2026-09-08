@@ -9,7 +9,7 @@ export const improvementAreas: { id: string; label: string }[] = [
   { id: "content", label: "Content & authority" },
   { id: "lead-generation", label: "Lead generation & follow-up" },
   { id: "automation", label: "Automation & internal systems" },
-  { id: "not-sure", label: "Not sure yet — that's what the audit is for" },
+  { id: "not-sure", label: "Not sure yet, that's what the audit is for" },
 ];
 
 export const auditGoals: { id: string; label: string }[] = [

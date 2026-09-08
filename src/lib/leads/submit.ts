@@ -244,7 +244,7 @@ export async function submitLead(raw: RawLeadInput): Promise<SubmitResult> {
           ok: false,
           recoverable: true,
           error:
-            "We couldn't confirm your submission went through on our end. Please try again in a moment, or continue directly on WhatsApp or email below — nothing you entered is lost.",
+            "We couldn't confirm your submission went through on our end. Please try again in a moment, or continue directly on WhatsApp or email below: nothing you entered is lost.",
           fallback: buildFallbackLinks(lead),
         };
       }

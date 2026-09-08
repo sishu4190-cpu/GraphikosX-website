@@ -1,7 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Reveal } from "@/components/motion/Reveal";
-import { ScrollActivationTimeline } from "@/components/motion/ScrollActivationTimeline";
+import { ScrollScrubTimelineHost } from "@/components/motion/ScrollScrubTimelineHost";
 import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 
 const steps = [
@@ -20,7 +20,10 @@ export function HowWeWork() {
       <Container className="relative z-10">
         <SectionHeader animate eyebrow="Our Process" title="Strategy before execution." />
 
-        <ScrollActivationTimeline steps={steps} className="mt-20" />
+        {/* Phase 2b: rolled out from CustomerJourney's Phase 2 pilot, now
+            approved — same scroll-scrubbed activation, was a fixed-time
+            reveal via ScrollActivationTimeline. */}
+        <ScrollScrubTimelineHost steps={steps} className="mt-20" />
 
         <Reveal delay={0.4}>
           <p className="mt-14 text-center font-display text-lg font-bold text-ink">

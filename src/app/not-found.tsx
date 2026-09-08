@@ -3,7 +3,7 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: "Page Not Found — GraphikosX",
+  title: "Page Not Found | GraphikosX",
   description: "The page you're looking for doesn't exist.",
   robots: { index: false, follow: false },
 };

@@ -40,7 +40,7 @@ export function ServiceEcosystem({ detail, serviceName }: { detail: ServiceDetai
             <SectionHeader
               eyebrow="Best Suited For"
               title="The industries this matters most in."
-              description="Not every service applies equally everywhere — here is where it tends to matter most."
+              description="Not every service applies equally everywhere: here is where it tends to matter most."
             />
             <div className="mt-8 flex flex-col gap-3">
               {relevantIndustries.map((ind) => (

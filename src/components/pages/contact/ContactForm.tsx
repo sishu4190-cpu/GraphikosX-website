@@ -126,7 +126,7 @@ export function ContactForm() {
                   <path d="M4 12.5l5 5L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
-              <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Message sent — thank you.</h2>
+              <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">Message sent, thank you.</h2>
               <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-grey-700">
                 We&rsquo;ve received your message and will get back to you soon.
               </p>
@@ -182,7 +182,7 @@ export function ContactForm() {
               name="message"
               value={form.message}
               onChange={(v) => update("message", v)}
-              placeholder="Tell us a bit more — the more context, the better we can help."
+              placeholder="Tell us a bit more: the more context, the better we can help."
               maxLength={1000}
             />
             <RadioPills

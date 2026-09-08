@@ -23,7 +23,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         <p className="font-numeric text-sm font-semibold uppercase tracking-[0.2em] text-accent">Something went wrong</p>
         <h1 className="mt-4 font-display text-4xl font-bold text-ink sm:text-5xl">This page hit a snag.</h1>
         <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-grey-700">
-          Nothing on your end — try again, or head back home. If this keeps happening, reach us directly and we&rsquo;ll
+          Nothing on your end: try again, or head back home. If this keeps happening, reach us directly and we&rsquo;ll
           sort it out.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

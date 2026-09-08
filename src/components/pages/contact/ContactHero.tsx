@@ -22,7 +22,7 @@ export function ContactHero() {
 
         <MaskReveal delay={0.15} as="p" className="mt-6 text-base leading-relaxed text-grey-700 md:text-lg">
           Whether you already know what you need or you&rsquo;re still figuring it out, reach out directly or send a message
-          below — we&rsquo;re a remote-first team and reply as soon as we can.
+          below. We&rsquo;re a remote-first team and reply as soon as we can.
         </MaskReveal>
       </Container>
     </section>

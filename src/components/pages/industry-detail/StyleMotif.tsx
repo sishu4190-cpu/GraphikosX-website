@@ -9,10 +9,11 @@ import type { VisualStyle } from "@/lib/data/industry-details";
  * spatial    -> real-estate
  * editorial  -> architecture-interior
  * authority  -> legal-professional-services ("Legal, CA & Professional Services")
- * local      -> fitness-wellness ("Gyms & Fitness"), hospitality ("Cafes & Restaurants")
+ * local      -> fitness-wellness ("Gyms & Fitness")
  * progress   -> education-coaching
  * luxury     -> jewellery-wedding (Phase 2H — faceted gem motif)
  * kinetic    -> automotive-ev (Phase 2H — directional speed-trail motif, split out from "technical" for stronger differentiation from industrial)
+ * trust      -> financial-services-wealth-management (Phase 3 — shield-and-checkmark motif; replaces the retired "hospitality" industry, which previously used "local")
  */
 export function StyleMotif({ style, className = "" }: { style: VisualStyle; className?: string }) {
   switch (style) {
@@ -75,6 +76,13 @@ export function StyleMotif({ style, className = "" }: { style: VisualStyle; clas
           <path d="M 60 200 L 160 200" fill="none" stroke="#1D4ED8" strokeWidth="4" strokeLinecap="round" opacity="0.5" />
           <path d="M 60 320 L 130 320" fill="none" stroke="#1D4ED8" strokeWidth="4" strokeLinecap="round" opacity="0.5" />
           <circle cx="340" cy="200" r="12" fill="#1D4ED8" />
+        </svg>
+      );
+    case "trust":
+      return (
+        <svg aria-hidden viewBox="0 0 400 400" className={className}>
+          <path d="M 200 70 L 300 110 L 300 200 C 300 270 255 320 200 340 C 145 320 100 270 100 200 L 100 110 Z" fill="none" stroke="#1D4ED8" strokeWidth="6" strokeLinejoin="round" />
+          <path d="M 155 205 L 190 240 L 250 165" fill="none" stroke="#1D4ED8" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "progress":

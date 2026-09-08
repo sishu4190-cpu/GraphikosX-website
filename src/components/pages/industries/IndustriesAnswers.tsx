@@ -15,10 +15,13 @@ const industryListSentence =
     ? `${industryNameList.slice(0, -1).join(", ")} and ${industryNameList[industryNameList.length - 1]}`
     : industryNameList[0];
 
-const qa = [
+// Exported so industries/page.tsx can feed this same list into
+// faqPageSchema() — one array, both the visible copy and the structured
+// data, so they can never drift apart (Phase 10 SEO/AEO gap fix).
+export const qa = [
   { q: "Which industries does GraphikosX serve?", a: `${industryListSentence}.` },
   { q: "Why only 10 industries?", a: "Specialization requires depth. Serving fewer industries means understanding each one's customers, buying behaviour and trust signals well enough to build strategy around them, rather than adapting a generic template." },
-  { q: "Does GraphikosX use the same strategy for every industry?", a: "No. Each industry has a different digital challenge and opportunity — a healthcare practice and a real estate developer are not marketed the same way, even using the same underlying services." },
+  { q: "Does GraphikosX use the same strategy for every industry?", a: "No. Each industry has a different digital challenge and opportunity: a healthcare practice and a real estate developer are not marketed the same way, even using the same underlying services." },
   { q: "How does industry specialization improve strategy?", a: "Understanding an industry's customer, buying behaviour, competition and trust signals in advance means less time spent discovering the obvious and more time on what actually moves that specific business forward." },
 ];
 

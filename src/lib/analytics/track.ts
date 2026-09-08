@@ -28,7 +28,10 @@ export type AnalyticsEvent =
   | "service_cta_clicked"
   | "industry_cta_clicked"
   | "founder_instagram_clicked"
-  | "founder_linkedin_clicked";
+  | "founder_linkedin_clicked"
+  | "popup_shown"
+  | "popup_dismissed"
+  | "popup_submitted";
 
 type AnalyticsPayload = Record<string, string | number | boolean | undefined>;
 

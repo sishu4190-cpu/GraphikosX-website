@@ -1,4 +1,4 @@
-export type VisualStyle = "technical" | "clarity" | "spatial" | "editorial" | "authority" | "local" | "progress" | "luxury" | "kinetic";
+export type VisualStyle = "technical" | "clarity" | "spatial" | "editorial" | "authority" | "local" | "progress" | "luxury" | "kinetic" | "trust";
 export type ApproachPhase = { phase: "Discover" | "Audit" | "Strategize" | "Execute" | "Optimize"; description: string };
 export type FAQ = { q: string; a: string };
 export type RelevantService = { slug: string; why: string };
@@ -38,9 +38,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Trusted Before the First Appointment",
     headline: "Build trust before the first appointment.",
     heroApproach:
-      "GraphikosX approaches doctors and clinics with a trust-first lens — a clear, professional website, accurate local presence, and patient education content, built to support a patient's decision without making treatment claims or promises GraphikosX has no basis to make.",
+      "GraphikosX approaches doctors and clinics with a trust-first lens: a clear, professional website, accurate local presence, and patient education content, built to support a patient's decision without making treatment claims or promises GraphikosX has no basis to make.",
     aeoAnswer:
-      "GraphikosX helps doctors, clinics and healthcare practices by strengthening the trust signals patients actually look for before booking — a clear website, credentials, reviews, and local visibility — so the practice is easy to find and easy to trust during the research stage that happens before every appointment.",
+      "GraphikosX helps doctors, clinics and healthcare practices by strengthening the trust signals patients actually look for before booking: a clear website, credentials, reviews, and local visibility, so the practice is easy to find and easy to trust during the research stage that happens before every appointment.",
     challenges: [
       { title: "Trust Before the First Call", description: "Patients decide whether a practice is worth booking almost entirely from how credible it looks online, long before any consultation happens." },
       { title: "Thin Local Discoverability", description: "Many clinics are hard to find in local and map search against competitors that have simply claimed and completed their Google Business Profile." },
@@ -77,16 +77,16 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Google Search", "Clinic/Practice Website", "Reviews", "Educational Content", "Appointment Journey", "CRM / Follow-Up"],
     transformation: { before: "A clinic patients have to call just to learn the basics.", after: "A practice patients already trust before they dial the number." },
     faqs: [
-      { q: "How should a clinic build trust online?", a: "Through clear credentials, genuine reviews, a professional website, and patient education content — the same signals a patient would look for in person, made visible before they ever call." },
-      { q: "Does a doctor or clinic need SEO?", a: "Yes, particularly for non-branded searches — patients often search by symptom, specialty or location rather than a practice's name, and visibility there matters." },
+      { q: "How should a clinic build trust online?", a: "Through clear credentials, genuine reviews, a professional website, and patient education content: the same signals a patient would look for in person, made visible before they ever call." },
+      { q: "Does a doctor or clinic need SEO?", a: "Yes, particularly for non-branded searches, since patients often search by symptom, specialty or location rather than a practice's name, and visibility there matters." },
       { q: "What digital presence matters most for a clinic?", a: "A clear, accurate website and a complete, actively managed Google Business Profile tend to matter most, since they are usually the first two things a searching patient checks." },
-      { q: "Can GraphikosX help with patient reviews?", a: "GraphikosX can help structure how reviews are requested and responded to, within the bounds of what is appropriate for healthcare marketing — not by fabricating or incentivizing reviews." },
-      { q: "Does this include medical advice or treatment marketing?", a: "No — GraphikosX focuses on trust, discoverability and clarity of information, not medical advice, treatment claims, or guarantees about patient outcomes." },
+      { q: "Can GraphikosX help with patient reviews?", a: "GraphikosX can help structure how reviews are requested and responded to, within the bounds of what is appropriate for healthcare marketing, not by fabricating or incentivizing reviews." },
+      { q: "Does this include medical advice or treatment marketing?", a: "No. GraphikosX focuses on trust, discoverability and clarity of information, not medical advice, treatment claims, or guarantees about patient outcomes." },
     ],
     ctaHeadline: "Audit Your Clinic's Digital Presence",
     ctaSupportingCopy: "Get a free audit of how your practice currently appears to a patient searching online.",
     metaTitle: "Digital Presence for Doctors & Clinics | GraphikosX",
-    metaDescription: "GraphikosX helps doctors and clinics build patient trust online through clear websites, local visibility and educational content — no medical claims.",
+    metaDescription: "GraphikosX helps doctors and clinics build patient trust online through clear websites, local visibility and educational content, with no medical claims.",
   },
 
   "real-estate": {
@@ -95,9 +95,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Built to Be Compared and Chosen",
     headline: "Make the project hard to ignore.",
     heroApproach:
-      "GraphikosX treats each real estate project as its own story — a distinct website and content presence that helps a high-consideration purchase stand out from the near-identical listings it is being compared against.",
+      "GraphikosX treats each real estate project as its own story, with a distinct website and content presence that helps a high-consideration purchase stand out from the near-identical listings it is being compared against.",
     aeoAnswer:
-      "GraphikosX helps real estate businesses and developers by giving each project a distinct, high-quality digital presence — dedicated pages, strong visuals and a structured enquiry process — so the project is clearly differentiated during the lengthy comparison stage that precedes a site visit.",
+      "GraphikosX helps real estate businesses and developers by giving each project a distinct, high-quality digital presence: dedicated pages, strong visuals and a structured enquiry process, so the project is clearly differentiated during the lengthy comparison stage that precedes a site visit.",
     challenges: [
       { title: "Trust in the Developer, Not Just the Project", description: "Buyers research who is actually building and delivering the project at least as closely as they research the project itself." },
       { title: "Low-Quality Lead Volume", description: "Broad ad campaigns generate enquiries that were never seriously qualified, wasting sales time on browsers, not buyers." },
@@ -107,7 +107,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Discovery", "Project Research", "Comparison", "Site Visit", "Decision"],
     buyerJourneyNote:
-      "Real estate is a high-consideration purchase, so buyers research extensively before ever visiting a site — comparing multiple projects on similar criteria before narrowing down to the handful worth an in-person visit.",
+      "Real estate is a high-consideration purchase, so buyers research extensively before ever visiting a site, comparing multiple projects on similar criteria before narrowing down to the handful worth an in-person visit.",
     trustSignals: [
       "High-quality project photography and presentation",
       "Transparent, complete project details rather than vague marketing language",
@@ -119,7 +119,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
       { slug: "business-websites", why: "A structured site with dedicated project pages presents each project on its own terms, not as one of many identical listings." },
       { slug: "landing-pages", why: "Project launches and campaigns need a dedicated page built to convert that specific audience, not a shared homepage." },
       { slug: "visual-identity", why: "Consistent, premium presentation signals credibility for a high-value purchase decision." },
-      { slug: "content-production", why: "Project storytelling — not just specifications — is what helps a buyer connect with a specific development." },
+      { slug: "content-production", why: "Project storytelling, not just specifications, is what helps a buyer connect with a specific development." },
       { slug: "lead-generation-systems", why: "A structured enquiry pipeline captures interest generated by marketing before it goes cold." },
       { slug: "crm-integration", why: "The long consideration cycle in real estate requires organized, consistent follow-up." },
     ],
@@ -134,10 +134,10 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Search & Discovery", "Project Website/Pages", "Visual Content", "Enquiry Capture", "Site Visit Scheduling", "CRM / Follow-Up"],
     transformation: { before: "One listing among a dozen identical ones.", after: "The project buyers remember and compare everything else against." },
     faqs: [
-      { q: "Should every project have its own website or page?", a: "Generally yes — a dedicated page lets a project be evaluated on its own merits rather than being diluted inside a general company site." },
-      { q: "How important is photography and visual content?", a: "Very — real estate is a highly visual purchase decision, and low-quality or generic visuals actively undermine perceived project quality." },
-      { q: "Can this help with enquiry follow-up, not just marketing?", a: "Yes — CRM and lead generation systems are part of the relevant service set specifically because generating interest without following it up wastes the investment." },
-      { q: "Does this apply to individual agents as well as developers?", a: "The same principles apply at a smaller scale — clear presentation, credible proof and organized follow-up matter regardless of portfolio size." },
+      { q: "Should every project have its own website or page?", a: "Generally yes: a dedicated page lets a project be evaluated on its own merits rather than being diluted inside a general company site." },
+      { q: "How important is photography and visual content?", a: "Very. Real estate is a highly visual purchase decision, and low-quality or generic visuals actively undermine perceived project quality." },
+      { q: "Can this help with enquiry follow-up, not just marketing?", a: "Yes. CRM and lead generation systems are part of the relevant service set specifically because generating interest without following it up wastes the investment." },
+      { q: "Does this apply to individual agents as well as developers?", a: "The same principles apply at a smaller scale: clear presentation, credible proof and organized follow-up matter regardless of portfolio size." },
     ],
     ctaHeadline: "Audit Your Project's Digital Visibility",
     ctaSupportingCopy: "Get a free audit of how your current projects are presented and followed up on.",
@@ -153,7 +153,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     heroApproach:
       "GraphikosX approaches education and coaching businesses around one question a prospective learner is always asking: will this actually get me the outcome I want. The digital presence is built to answer that clearly, not to oversell it.",
     aeoAnswer:
-      "GraphikosX helps education and coaching businesses by making their outcomes, credibility and social proof clearly visible online, and by building a structured enrollment funnel — so prospective learners can evaluate fit and commit with confidence, instead of enquiring into an unclear process.",
+      "GraphikosX helps education and coaching businesses by making their outcomes, credibility and social proof clearly visible online, and by building a structured enrollment funnel, so prospective learners can evaluate fit and commit with confidence instead of enquiring into an unclear process.",
     challenges: [
       { title: "Unclear Outcomes", description: "Programs are often described in aspirational language without stating what a learner will actually be able to do afterward." },
       { title: "Scattered Social Proof", description: "Genuine testimonials exist but sit buried in old screenshots and posts a new visitor will never actually find." },
@@ -163,7 +163,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Discovery", "Outcome Research", "Social Proof Check", "Enquiry", "Enrollment"],
     buyerJourneyNote:
-      "A prospective learner typically discovers a program, then researches whether it actually delivers the outcome they want, checks social proof to validate that claim, and only enquires once reasonably convinced — enrollment follows a structured decision, not an impulse.",
+      "A prospective learner typically discovers a program, then researches whether it actually delivers the outcome they want, checks social proof to validate that claim, and only enquires once reasonably convinced. Enrollment follows a structured decision, not an impulse.",
     trustSignals: [
       "Clear communication of what the program or coaching actually delivers",
       "Instructor or coach credibility and visible expertise",
@@ -191,9 +191,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     transformation: { before: "A program described in promises.", after: "A program proven by outcomes a prospective learner can actually see." },
     faqs: [
       { q: "How should a coaching business communicate results without overpromising?", a: "By describing the process and what participants typically work on or achieve, backed by genuine examples where they exist, rather than guaranteeing specific outcomes." },
-      { q: "Does SEO matter for education and coaching businesses?", a: "Yes, particularly for people actively searching for a solution to a specific problem the program addresses — that is often a strong-intent search moment." },
-      { q: "What is the biggest digital gap for most coaching businesses?", a: "Usually an unclear enrollment funnel — a prospective learner is interested but the path from that interest to actually enrolling is not obvious or is inconsistent." },
-      { q: "Can this help organize existing testimonials and social proof?", a: "Yes — one common fix is simply making already-existing genuine social proof visible and organized, rather than scattered across old posts and screenshots." },
+      { q: "Does SEO matter for education and coaching businesses?", a: "Yes, particularly for people actively searching for a solution to a specific problem the program addresses, since that is often a strong-intent search moment." },
+      { q: "What is the biggest digital gap for most coaching businesses?", a: "Usually an unclear enrollment funnel: a prospective learner is interested, but the path from that interest to actually enrolling is not obvious or is inconsistent." },
+      { q: "Can this help organize existing testimonials and social proof?", a: "Yes. One common fix is simply making already-existing genuine social proof visible and organized, rather than scattered across old posts and screenshots." },
     ],
     ctaHeadline: "Audit Your Program's Enrollment Journey",
     ctaSupportingCopy: "Get a free audit of how clearly your program's outcomes come across to a new visitor today.",
@@ -207,9 +207,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Crafted Trust, Presented Right",
     headline: "Present craftsmanship the way the occasion deserves.",
     heroApproach:
-      "GraphikosX approaches jewellery and wedding businesses around the reality that this is a high-emotion, high-trust purchase — the digital presence is built to convey craftsmanship, authenticity and occasion together, not just show product photos at a price point.",
+      "GraphikosX approaches jewellery and wedding businesses around the reality that this is a high-emotion, high-trust purchase: the digital presence is built to convey craftsmanship, authenticity and occasion together, not just show product photos at a price point.",
     aeoAnswer:
-      "GraphikosX helps jewellery and wedding businesses by presenting craftsmanship, authenticity and the emotional context of the occasion together online — through premium visual presentation, trust signals around materials and certification, and a clear path to a showroom visit or consultation — so the business competes on trust and taste, not price alone.",
+      "GraphikosX helps jewellery and wedding businesses by presenting craftsmanship, authenticity and the emotional context of the occasion together online, through premium visual presentation, trust signals around materials and certification, and a clear path to a showroom visit or consultation, so the business competes on trust and taste, not price alone.",
     challenges: [
       { title: "Generic Product-First Presentation", description: "Pieces are often shown as commodity product photos rather than as part of an occasion and a story, which is how the buyer actually experiences the decision." },
       { title: "Trust in Authenticity & Craftsmanship", description: "A high-value purchase needs visible confidence in materials, certification and craftsmanship before a buyer will commit, and that confidence rarely comes through online." },
@@ -219,7 +219,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Discovery", "Collection Research", "Trust & Authenticity Check", "Consultation Request", "Showroom Visit"],
     buyerJourneyNote:
-      "A jewellery or wedding purchase is high-emotion and high-consideration at once — a prospective buyer discovers a collection, researches craftsmanship and authenticity closely, and only requests a consultation once genuinely convinced, since the actual decision is usually made in person.",
+      "A jewellery or wedding purchase is high-emotion and high-consideration at once. A prospective buyer discovers a collection, researches craftsmanship and authenticity closely, and only requests a consultation once genuinely convinced, since the actual decision is usually made in person.",
     trustSignals: [
       "High-quality, consistent photography that reflects the craftsmanship, not just the product",
       "Clear information about materials, certification and provenance where relevant",
@@ -246,14 +246,14 @@ export const industryDetails: Record<string, IndustryDetail> = {
     transformation: { before: "A product photo competing on price.", after: "A piece of craftsmanship worth the visit and the story." },
     faqs: [
       { q: "How can a jewellery brand compete on more than price?", a: "By making craftsmanship, authenticity and the story behind a piece genuinely visible, so the comparison shifts from a price line item to a trust and taste decision." },
-      { q: "Does this apply to smaller, single-showroom businesses as well as larger brands?", a: "Yes — the same principles of clear photography, authenticity signals and a low-friction consultation path apply regardless of scale." },
+      { q: "Does this apply to smaller, single-showroom businesses as well as larger brands?", a: "Yes. The same principles of clear photography, authenticity signals and a low-friction consultation path apply regardless of scale." },
       { q: "How should seasonal demand around weddings and festivals be handled?", a: "With a system that captures and organizes enquiries during peak periods, so interest generated during a demand spike doesn't quietly go unanswered." },
-      { q: "Can this help drive showroom visits, not just online engagement?", a: "Yes — the entire journey is built around a clear next step, since most jewellery and wedding purchases are ultimately confirmed in person." },
+      { q: "Can this help drive showroom visits, not just online engagement?", a: "Yes. The entire journey is built around a clear next step, since most jewellery and wedding purchases are ultimately confirmed in person." },
     ],
     ctaHeadline: "Audit Your Showroom's Digital Presence",
     ctaSupportingCopy: "Get a free audit of how your collections and craftsmanship currently come across to someone browsing online.",
     metaTitle: "Digital Presence for Jewellery & Wedding Businesses | GraphikosX",
-    metaDescription: "GraphikosX helps jewellery and wedding businesses present craftsmanship, authenticity and occasion online — moving the decision beyond price alone.",
+    metaDescription: "GraphikosX helps jewellery and wedding businesses present craftsmanship, authenticity and occasion online, moving the decision beyond price alone.",
   },
 
   "industrial-manufacturing-chemicals": {
@@ -262,9 +262,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Engineered for Procurement Trust",
     headline: "Turn technical capability into digital authority.",
     heroApproach:
-      "GraphikosX treats industrial and chemical businesses as B2B, not consumer brands — the website, content and search presence are built around technical credibility and procurement research, not lifestyle marketing.",
+      "GraphikosX treats industrial and chemical businesses as B2B, not consumer brands: the website, content and search presence are built around technical credibility and procurement research, not lifestyle marketing.",
     aeoAnswer:
-      "GraphikosX helps industrial manufacturing and chemical businesses by building a website and search presence structured around how procurement teams actually evaluate suppliers — technical clarity, product and specification pages, and LinkedIn authority — so the business appears credible during the research and evaluation stage, before an RFQ is ever sent.",
+      "GraphikosX helps industrial manufacturing and chemical businesses by building a website and search presence structured around how procurement teams actually evaluate suppliers: technical clarity, product and specification pages, and LinkedIn authority, so the business appears credible during the research and evaluation stage, before an RFQ is ever sent.",
     challenges: [
       { title: "Technical Capability Invisible Online", description: "Real capability exists on the factory floor, but there are no product or specification pages a procurement researcher can actually evaluate without a phone call." },
       { title: "Procurement Trust", description: "Buyers vet a supplier's credibility long before any RFQ is issued, often with nothing structured online to check it against." },
@@ -274,7 +274,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Research", "Technical Evaluation", "Supplier Credibility Check", "RFQ", "Negotiation"],
     buyerJourneyNote:
-      "Industrial buying decisions are rarely impulsive. A procurement team or technical evaluator typically researches suppliers over weeks or months, checks technical fit before anything else, and only sends a request for quotation once credibility has already been established — often well before any direct contact happens.",
+      "Industrial buying decisions are rarely impulsive. A procurement team or technical evaluator typically researches suppliers over weeks or months, checks technical fit before anything else, and only sends a request for quotation once credibility has already been established, often well before any direct contact happens.",
     trustSignals: [
       "Clear, accurate technical documentation and specifications",
       "Product and capability pages that answer an evaluator's real questions",
@@ -284,9 +284,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     relevantServices: [
       { slug: "business-websites", why: "A structured site with real product and capability pages is what lets a technical evaluator assess fit without a phone call." },
-      { slug: "seo", why: "Procurement searches use specific technical and product terms — visibility there means being found during research, not after." },
+      { slug: "seo", why: "Procurement searches use specific technical and product terms, and visibility there means being found during research, not after." },
       { slug: "content-production", why: "Technical explainers and capability content demonstrate expertise to an audience that evaluates substance, not slogans." },
-      { slug: "linkedin-personal-branding", why: "B2B buyers research the people behind a supplier — leadership visibility on LinkedIn builds credibility before contact." },
+      { slug: "linkedin-personal-branding", why: "B2B buyers research the people behind a supplier, and leadership visibility on LinkedIn builds credibility before contact." },
       { slug: "digital-infrastructure", why: "Reliable systems matter when enquiries and RFQs need to be tracked and responded to without delay." },
       { slug: "crm-integration", why: "Long sales cycles need a system tracking every enquiry, not memory or a shared inbox." },
     ],
@@ -301,16 +301,16 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Search", "Technical Website", "Product/Spec Pages", "LinkedIn", "RFQ", "CRM"],
     transformation: { before: "Real capability with no way to prove it online.", after: "Technical credibility a procurement team can verify before the call." },
     faqs: [
-      { q: "Does SEO actually work for B2B manufacturing?", a: "Yes — procurement teams search using specific technical and product terms, and ranking for those searches means being found during the research stage rather than relying only on referrals." },
-      { q: "How can an industrial manufacturer generate qualified enquiries online?", a: "By making technical capability genuinely visible — product pages, specifications and content that let a buyer self-qualify before reaching out, rather than a generic homepage that requires a call to learn anything." },
-      { q: "What should a chemical or industrial supplier's website actually include?", a: "Clear capability and product pages, technical documentation where appropriate, and a straightforward way to submit an enquiry or RFQ — built for a technical evaluator, not a general consumer audience." },
-      { q: "Is LinkedIn actually relevant for industrial businesses?", a: "Very much so — B2B buyers frequently research the leadership and technical team behind a potential supplier before engaging, making LinkedIn a credibility signal, not a marketing afterthought." },
-      { q: "How long does it take to see results in this industry?", a: "Industrial sales cycles are inherently long, and digital visibility compounds gradually — this is a channel built for sustained credibility, not a quick campaign." },
+      { q: "Does SEO actually work for B2B manufacturing?", a: "Yes. Procurement teams search using specific technical and product terms, and ranking for those searches means being found during the research stage rather than relying only on referrals." },
+      { q: "How can an industrial manufacturer generate qualified enquiries online?", a: "By making technical capability genuinely visible: product pages, specifications and content that let a buyer self-qualify before reaching out, rather than a generic homepage that requires a call to learn anything." },
+      { q: "What should a chemical or industrial supplier's website actually include?", a: "Clear capability and product pages, technical documentation where appropriate, and a straightforward way to submit an enquiry or RFQ, built for a technical evaluator, not a general consumer audience." },
+      { q: "Is LinkedIn actually relevant for industrial businesses?", a: "Very much so. B2B buyers frequently research the leadership and technical team behind a potential supplier before engaging, making LinkedIn a credibility signal, not a marketing afterthought." },
+      { q: "How long does it take to see results in this industry?", a: "Industrial sales cycles are inherently long, and digital visibility compounds gradually. This is a channel built for sustained credibility, not a quick campaign." },
     ],
     ctaHeadline: "Audit Your Industrial Digital Presence",
     ctaSupportingCopy: "Get a free audit of how your technical capability actually presents itself to a procurement researcher today.",
     metaTitle: "Digital Presence for Manufacturing & Chemicals | GraphikosX",
-    metaDescription: "GraphikosX helps manufacturing and chemical businesses build B2B digital credibility — technical websites, procurement SEO and LinkedIn authority.",
+    metaDescription: "GraphikosX helps manufacturing and chemical businesses build B2B digital credibility through technical websites, procurement SEO and LinkedIn authority.",
   },
 
   "legal-professional-services": {
@@ -319,19 +319,19 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Authority Before the Consultation",
     headline: "Authority starts before the consultation.",
     heroApproach:
-      "GraphikosX approaches legal, CA and professional services firms around credibility and clarity — a precise, authoritative digital presence built to inform good decisions, not to promise outcomes it cannot guarantee.",
+      "GraphikosX approaches legal, CA and professional services firms around credibility and clarity: a precise, authoritative digital presence built to inform good decisions, not to promise outcomes it cannot guarantee.",
     aeoAnswer:
-      "GraphikosX helps legal, CA and professional services firms build authority and clarity online — through precise service explanations, thought leadership content and a credible digital presence — so a prospective client already trusts the firm's expertise before the first consultation, without relying on promised outcomes.",
+      "GraphikosX helps legal, CA and professional services firms build authority and clarity online, through precise service explanations, thought leadership content and a credible digital presence, so a prospective client already trusts the firm's expertise before the first consultation, without relying on promised outcomes.",
     challenges: [
       { title: "Generic Practice-Area Listings", description: "Services are often listed in generic terms that don't demonstrate the actual depth of expertise behind them." },
       { title: "Absent Thought Leadership", description: "The content that would build authority for the specific questions a future client is already searching is simply missing." },
       { title: "Confidentiality-Compatible Visibility", description: "The profession's expectations around discretion make many firms cautious to the point of being effectively invisible online." },
-      { title: "Partner & Practitioner Credibility", description: "Individual expertise — a partner, a CA, a senior associate — rarely has any visible presence of its own for a prospective client to check." },
+      { title: "Partner & Practitioner Credibility", description: "Individual expertise, whether a partner, a CA, or a senior associate, rarely has any visible presence of its own for a prospective client to check." },
       { title: "Consultation Request Friction", description: "A prospective client who is ready to act often can't find a clear, low-friction way to actually request a consultation." },
     ],
     buyerJourney: ["Need Arises", "Search or Referral", "Credibility Check", "Consultation Request", "Engagement"],
     buyerJourneyNote:
-      "A need typically arises first, followed by either a search or a referral. Before requesting a consultation, a prospective client checks the firm's credibility — via its website, content and professional presence — since legal, financial and professional decisions carry real consequences and are rarely made on trust alone.",
+      "A need typically arises first, followed by either a search or a referral. Before requesting a consultation, a prospective client checks the firm's credibility via its website, content and professional presence, since legal, financial and professional decisions carry real consequences and are rarely made on trust alone.",
     trustSignals: [
       "Clear, precise explanation of practice areas and services",
       "Thought leadership content demonstrating real expertise",
@@ -357,8 +357,8 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Search or Referral", "Firm Website", "Thought Leadership Content", "LinkedIn Authority", "Consultation Request", "Engagement"],
     transformation: { before: "A firm that's invisible until someone is referred.", after: "A practice whose expertise is visible before the consultation." },
     faqs: [
-      { q: "Can a law firm or CA practice advertise results or promise outcomes?", a: "GraphikosX does not build messaging around promised outcomes or results — the focus stays on clearly communicating expertise, experience and process, consistent with professional advertising norms." },
-      { q: "Does SEO work for legal, CA and professional services?", a: "Yes — prospective clients frequently search for specific legal, financial or professional questions before ever contacting a firm, making that visibility valuable." },
+      { q: "Can a law firm or CA practice advertise results or promise outcomes?", a: "GraphikosX does not build messaging around promised outcomes or results. The focus stays on clearly communicating expertise, experience and process, consistent with professional advertising norms." },
+      { q: "Does SEO work for legal, CA and professional services?", a: "Yes. Prospective clients frequently search for specific legal, financial or professional questions before ever contacting a firm, making that visibility valuable." },
       { q: "How does thought leadership content help a firm?", a: "It demonstrates depth of expertise in a way a generic service page cannot, which is often what actually earns trust before a consultation." },
       { q: "Is LinkedIn really relevant for a law firm, CA practice or consultancy?", a: "For many professional services, individual partner or practitioner credibility carries real weight, and LinkedIn is where that credibility is most visibly built." },
     ],
@@ -374,9 +374,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Local. Trusted. Recognizable.",
     headline: "Turn local visibility into consistent membership.",
     heroApproach:
-      "GraphikosX approaches gyms and fitness businesses as local, trust-driven and community-oriented — the digital presence is built to win the local search moment and then support the retention that follows.",
+      "GraphikosX approaches gyms and fitness businesses as local, trust-driven and community-oriented: the digital presence is built to win the local search moment and then support the retention that follows.",
     aeoAnswer:
-      "GraphikosX helps gyms and fitness businesses by strengthening local search visibility, reviews and social presence — the signals that most directly influence whether someone nearby chooses to try a class or membership — and by supporting the community engagement that keeps them coming back.",
+      "GraphikosX helps gyms and fitness businesses by strengthening local search visibility, reviews and social presence, the signals that most directly influence whether someone nearby chooses to try a class or membership, and by supporting the community engagement that keeps them coming back.",
     challenges: [
       { title: "Inconsistent Local Presence", description: "An incomplete Google Business Profile and irregular social activity quietly undercut a decision that's fundamentally about what's nearby." },
       { title: "Unmanaged Reviews", description: "Reviews are one of the first things a nearby prospect checks before trying a class, and unmanaged ones can cost trial visits." },
@@ -386,7 +386,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Local Search or Referral", "Reviews", "Trial Visit", "Comparison", "Membership"],
     buyerJourneyNote:
-      "Someone typically finds a gym or fitness business through local search or a referral, checks reviews to validate it, and often visits a trial class before comparing it against nearby alternatives — membership follows once that comparison favors the business.",
+      "Someone typically finds a gym or fitness business through local search or a referral, checks reviews to validate it, and often visits a trial class before comparing it against nearby alternatives. Membership follows once that comparison favors the business.",
     trustSignals: [
       "Genuine, actively managed reviews",
       "Trainer or practitioner credibility",
@@ -412,10 +412,10 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Local Search", "Google Business Profile", "Reviews", "Social Content", "Trial Visit", "CRM / Membership Follow-Up"],
     transformation: { before: "A gym competing purely on proximity.", after: "A local brand people choose, join and stay with." },
     faqs: [
-      { q: "How important are reviews for a gym or studio?", a: "Very — reviews are frequently one of the first things a nearby prospect checks before deciding to try a class, and unmanaged reviews can quietly cost trial visits." },
-      { q: "Does social media actually drive memberships?", a: "It contributes mainly to trust and community proof rather than direct sign-ups — most memberships still follow a trial visit, which social presence helps encourage in the first place." },
-      { q: "What is the most common digital gap in this industry?", a: "An incomplete or inconsistent local presence — an outdated Google Business Profile or unmanaged reviews are common, easy-to-fix gaps." },
-      { q: "Can this help with member retention, not just new sign-ups?", a: "Yes — content and CRM follow-up support ongoing engagement with existing members, not only the initial acquisition." },
+      { q: "How important are reviews for a gym or studio?", a: "Very. Reviews are frequently one of the first things a nearby prospect checks before deciding to try a class, and unmanaged reviews can quietly cost trial visits." },
+      { q: "Does social media actually drive memberships?", a: "It contributes mainly to trust and community proof rather than direct sign-ups. Most memberships still follow a trial visit, which social presence helps encourage in the first place." },
+      { q: "What is the most common digital gap in this industry?", a: "An incomplete or inconsistent local presence: an outdated Google Business Profile or unmanaged reviews are common, easy-to-fix gaps." },
+      { q: "Can this help with member retention, not just new sign-ups?", a: "Yes. Content and CRM follow-up support ongoing engagement with existing members, not only the initial acquisition." },
     ],
     ctaHeadline: "Audit Your Gym's Local Presence",
     ctaSupportingCopy: "Get a free audit of how your business currently appears to someone searching nearby.",
@@ -423,59 +423,59 @@ export const industryDetails: Record<string, IndustryDetail> = {
     metaDescription: "GraphikosX helps gyms and fitness businesses win local search, manage reviews and build the social presence that drives trial visits and membership.",
   },
 
-  "hospitality": {
-    slug: "hospitality",
-    visualStyle: "local",
-    eyebrow: "Discovered, Reviewed, Booked",
-    headline: "Win the table before the walk-in.",
+  "financial-services-wealth-management": {
+    slug: "financial-services-wealth-management",
+    visualStyle: "trust",
+    eyebrow: "Trust Before the First Meeting",
+    headline: "Trust is earned before the first meeting.",
     heroApproach:
-      "GraphikosX approaches cafes and restaurants around the reality that a diner decides based on photos, reviews and how easy the place is to find — almost entirely before ever seeing the menu in person. The digital presence is built to win that decision.",
+      "GraphikosX approaches financial services and wealth management firms around a simple reality: money decisions are high-consequence and rarely made on trust alone. The digital presence has to demonstrate credibility, compliance-conscious clarity and a credible process before a prospective client ever agrees to a conversation, without promising returns GraphikosX has no basis or authority to promise.",
     aeoAnswer:
-      "GraphikosX helps cafes and restaurants by strengthening the visual presentation, reviews and local search visibility that most directly shape a diner's decision — so the venue wins the discovery-and-comparison stage that happens before a table is ever booked or a walk-in decided on.",
+      "GraphikosX helps financial advisors, wealth managers and financial services firms build the credibility a prospective client looks for before trusting someone with their money, through a precise, compliance-conscious website, visible credentials and educational content, so trust is established well before the first conversation, without relying on promised returns.",
     challenges: [
-      { title: "Outdated or Inconsistent Photography", description: "The food and ambience shown online often doesn't match the current, actual experience a diner would find at the venue." },
-      { title: "Review & Reputation Management", description: "A handful of unanswered negative reviews can outweigh consistently good service and food that simply isn't reflected online." },
-      { title: "Local & Map Discoverability", description: "Many venues are not well optimized for the \"near me\" and cuisine-specific searches that actually drive footfall." },
-      { title: "Reservation & Enquiry Friction", description: "The path from finding the venue online to actually booking a table or placing an enquiry sometimes adds unnecessary steps." },
-      { title: "Platform Dependence", description: "Heavy reliance on third-party delivery and booking platforms leaves little direct relationship with the customer, and no owned data to build on." },
+      { title: "Trust Before Any Number Is Discussed", description: "A prospective client has to trust a firm with something deeply personal, their money, long before any actual conversation about numbers takes place, and most firms' digital presence does little to earn that trust in advance." },
+      { title: "Credentials That Are Hard to Verify", description: "Registrations, certifications and qualifications that matter enormously to a cautious prospect are often buried, outdated or missing from the website altogether." },
+      { title: "Compliance-Safe Messaging", description: "Firms are rightly cautious about what they can say about performance or outcomes, which often leads to messaging so vague it fails to build any confidence at all." },
+      { title: "Referral Dependency", description: "Much of the business still arrives through personal referral, leaving the firm with little presence for the much larger pool of prospects who don't already know someone to ask." },
+      { title: "Discretion vs. Discoverability", description: "Client confidentiality and a low-key professional culture can tip into the firm being effectively invisible to the people actively searching for exactly what it offers." },
     ],
-    buyerJourney: ["Discovery", "Reviews Check", "Comparison", "Booking", "Visit / Experience"],
+    buyerJourney: ["Life Event or Need", "Search or Referral", "Credibility Check", "Consultation Request", "Engagement"],
     buyerJourneyNote:
-      "A diner discovers a cafe or restaurant through local search, social or a food platform, checks reviews closely, and compares it against nearby alternatives before booking or walking in — almost entirely based on visual presentation and reputation rather than direct interaction with the venue.",
+      "A need for financial or wealth advice is often triggered by a specific life event, such as a bonus, an inheritance, a career change, or retirement planning, after which a prospect searches or asks for a referral, then carefully checks credentials and reputation before ever requesting a consultation. That credibility check happens almost entirely online, and it's the stage most firms invest in least.",
     trustSignals: [
-      "High-quality, current photography of food and ambience",
-      "Actively managed, responded-to reviews",
-      "Clear, accurate information about menu, hours and reservations",
-      "Direct booking or enquiry clarity and ease",
-      "Consistent local search presence and map visibility",
+      "Clearly displayed registrations, certifications and credentials",
+      "A precise, compliance-conscious explanation of services offered",
+      "Educational content that builds understanding without promising returns",
+      "Genuine client testimonials and reputation, handled within regulatory limits",
+      "A professional digital presence that reads as established, not templated",
     ],
     relevantServices: [
-      { slug: "google-business-profile", why: "Local search visibility is often the starting point for diner discovery, especially for \"near me\" and cuisine-specific searches." },
-      { slug: "business-websites", why: "A booking-ready website with strong visuals directly supports the comparison stage before a diner commits." },
-      { slug: "content-production", why: "Storytelling around the food and dining experience helps a venue stand out beyond generic menu listings." },
-      { slug: "social-media-management", why: "Visually-driven platforms are central to how cafes and restaurants are discovered and compared." },
-      { slug: "seo", why: "Visibility for cuisine, occasion and location-based searches captures diners earlier in their decision." },
+      { slug: "business-websites", why: "A precise, professional website is often the first credibility check a prospective client performs before trusting a firm with their finances." },
+      { slug: "seo", why: "Being visible for specific financial and wealth-planning searches means being found while a need is actively being researched." },
+      { slug: "content-production", why: "Educational content demonstrates real expertise and builds understanding without ever promising returns." },
+      { slug: "linkedin-personal-branding", why: "Individual advisor credibility carries real weight in this industry, and LinkedIn is where that credibility is most visibly built." },
+      { slug: "digital-infrastructure", why: "A secure, reliable technical foundation matters where client trust and confidentiality are non-negotiable." },
     ],
-    outcomes: ["Stronger booking and walk-in conversion", "Better-managed reviews and reputation", "Higher local search visibility", "Improved diner perception before arrival"],
+    outcomes: ["Greater perceived credibility", "Higher discoverability for relevant financial searches", "Clearer, compliance-conscious positioning", "Stronger advisor or firm reputation"],
     approach: [
-      { phase: "Discover", description: "Understand the venue's specific concept, cuisine, and the diner it's actually built for." },
-      { phase: "Audit", description: "Review current visuals, reviews and booking process against diner expectations." },
-      { phase: "Strategize", description: "Prioritize the visual and reputation signals that would most improve booking and walk-in conversion." },
-      { phase: "Execute", description: "Build out the website, content and local presence with a clear, frictionless booking or enquiry path." },
-      { phase: "Optimize", description: "Monitor reviews and conversion, refining content and presentation as menus and seasons change." },
+      { phase: "Discover", description: "Understand the firm's services, target clients and the regulatory considerations that shape what it can say." },
+      { phase: "Audit", description: "Review the current website, credentials and content for clarity, precision and compliance-conscious messaging." },
+      { phase: "Strategize", description: "Prioritize the credibility signals and educational content that build the most trust for this specific practice." },
+      { phase: "Execute", description: "Build the website and content with precision and compliance-conscious professionalism as the standard throughout." },
+      { phase: "Optimize", description: "Track visibility and refine content and positioning as offerings and regulations evolve." },
     ],
-    ecosystem: ["Discovery (Search/Social)", "Reviews", "Venue Website", "Visual Content", "Reservation/Enquiry", "Guest Follow-Up"],
-    transformation: { before: "A venue diners scroll past.", after: "A venue diners specifically seek out." },
+    ecosystem: ["Search or Referral", "Firm/Advisor Website", "Credentials & Compliance", "Educational Content", "Consultation Request", "Engagement"],
+    transformation: { before: "A firm prospects only trust once someone vouches for it.", after: "A firm whose credibility is already visible before the first conversation." },
     faqs: [
-      { q: "How much do reviews actually affect footfall?", a: "Significantly — reviews are one of the primary trust signals diners check during comparison, and a pattern of unanswered negative reviews can outweigh strong photography." },
-      { q: "Does the venue need its own booking system, or can it rely on food/delivery platforms?", a: "Both channels typically matter — a strong direct website and local presence build credibility even for diners who ultimately book through a platform, and reduce platform commission dependency over time." },
-      { q: "What kind of content works best for cafes and restaurants?", a: "Content that conveys the actual food and ambience — genuine, current photography — tends to outperform generic menu listings or stock imagery." },
-      { q: "Is local SEO relevant for a single-location restaurant?", a: "Yes — most diners search using location and cuisine-based terms even when they already have a rough idea of what they want to eat." },
+      { q: "Can a financial advisor or wealth management firm advertise returns or performance?", a: "GraphikosX does not build messaging around promised returns or performance. The focus stays on clearly communicating credentials, process and expertise, consistent with standard financial-services advertising norms." },
+      { q: "Does SEO work for financial services and wealth management?", a: "Yes. Prospective clients frequently search for specific financial questions and planning needs long before contacting a firm, making that visibility valuable." },
+      { q: "How does educational content help a financial advisory firm?", a: "It demonstrates real expertise and builds understanding in a way a generic services page cannot, which is often what actually earns trust before someone discusses their finances with a stranger." },
+      { q: "Is personal branding relevant for an individual financial advisor?", a: "Often more than for the firm itself. Many clients are choosing to trust a specific advisor, and a visible, credible personal presence directly supports that decision." },
     ],
-    ctaHeadline: "Audit Your Restaurant's Digital Presence",
-    ctaSupportingCopy: "Get a free audit of how your venue currently appears to a diner comparing their options nearby.",
-    metaTitle: "Digital Presence for Cafes & Restaurants | GraphikosX",
-    metaDescription: "GraphikosX helps cafes and restaurants strengthen visual presentation, reviews and local search visibility to win the diner's decision before the visit.",
+    ctaHeadline: "Audit Your Firm's Digital Credibility",
+    ctaSupportingCopy: "Get a free audit of how clearly your firm's credibility and expertise currently come across online.",
+    metaTitle: "Digital Presence for Financial Services & Wealth Management | GraphikosX",
+    metaDescription: "GraphikosX helps financial advisors, wealth managers and financial services firms build credibility and trust online through precise, compliance-conscious positioning and content.",
   },
 
   "architecture-interior": {
@@ -484,9 +484,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "Presented at the Level of the Work",
     headline: "Present the portfolio at the level of the work.",
     heroApproach:
-      "GraphikosX treats architecture and interior design as a portfolio-first, credibility-driven category — the website and content are built to match the design quality of the work itself, not undersell it.",
+      "GraphikosX treats architecture and interior design as a portfolio-first, credibility-driven category: the website and content are built to match the design quality of the work itself, not undersell it.",
     aeoAnswer:
-      "GraphikosX helps architecture and interior design studios by presenting their portfolio and process with the same design quality as their actual work — since for this category, the website itself is often judged as evidence of design taste, not just a place to view past projects.",
+      "GraphikosX helps architecture and interior design studios by presenting their portfolio and process with the same design quality as their actual work, since for this category the website itself is often judged as evidence of design taste, not just a place to view past projects.",
     challenges: [
       { title: "Portfolio Undersells the Work", description: "A generic template with inconsistent photography and pacing can quietly undercut work that is genuinely excellent." },
       { title: "Unclear Design Process", description: "Prospective clients often aren't sure what working with the studio actually involves before committing to a consultation." },
@@ -496,9 +496,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Discovery", "Portfolio Review", "Process/Fit Evaluation", "Consultation", "Engagement"],
     buyerJourneyNote:
-      "A prospective client discovers a studio, then reviews the portfolio closely — often judging design taste from the site itself — before evaluating whether the studio's process and personality fit their project, and only then requesting a consultation.",
+      "A prospective client discovers a studio, then reviews the portfolio closely, often judging design taste from the site itself, before evaluating whether the studio's process and personality fit their project, and only then requesting a consultation.",
     trustSignals: [
-      "Portfolio presentation quality — photography, layout, pacing",
+      "Portfolio presentation quality: photography, layout, pacing",
       "A clearly explained design process",
       "Consistency between the studio's visual identity and the work it produces",
       "Evidence of the range of project types and scales handled",
@@ -506,7 +506,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     relevantServices: [
       { slug: "visual-identity", why: "For a design-led business, visual identity consistency is itself a credibility signal." },
-      { slug: "business-websites", why: "A portfolio site needs to be as considered as the projects it presents — pacing, photography and layout all matter." },
+      { slug: "business-websites", why: "A portfolio site needs to be as considered as the projects it presents: pacing, photography and layout all matter." },
       { slug: "content-production", why: "Explaining process and project stories builds trust beyond the finished photographs alone." },
       { slug: "brand-strategy", why: "Clear positioning helps attract the specific type of client and project the studio actually wants." },
       { slug: "social-media-management", why: "Visually-driven platforms are a natural extension of a portfolio-first business." },
@@ -522,8 +522,8 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Discovery", "Portfolio Website", "Process Content", "Consultation Request", "Engagement", "Referral Loop"],
     transformation: { before: "A portfolio that undersells the work.", after: "A portfolio judged at the level of the work itself." },
     faqs: [
-      { q: "How important is the website compared to word-of-mouth referrals?", a: "Even referral-driven clients typically check the website before reaching out — it either reinforces or undermines the recommendation they already received." },
-      { q: "Should every project be included in the portfolio?", a: "Usually not — a smaller, well-curated set that reflects the studio's actual direction tends to build more confidence than an exhaustive, uneven archive." },
+      { q: "How important is the website compared to word-of-mouth referrals?", a: "Even referral-driven clients typically check the website before reaching out. It either reinforces or undermines the recommendation they already received." },
+      { q: "Should every project be included in the portfolio?", a: "Usually not. A smaller, well-curated set that reflects the studio's actual direction tends to build more confidence than an exhaustive, uneven archive." },
       { q: "Does this include photography of the projects themselves?", a: "GraphikosX works with existing project photography and can advise on presentation, though arranging new professional photography is typically a separate, project-specific consideration." },
       { q: "How does this differ from a generic portfolio template?", a: "A generic template treats every studio the same; this is built around the specific point of view and project types that particular studio wants to attract." },
     ],
@@ -539,9 +539,9 @@ export const industryDetails: Record<string, IndustryDetail> = {
     eyebrow: "The Showroom Buyers Expect Today",
     headline: "Build the digital showroom buyers actually expect.",
     heroApproach:
-      "GraphikosX approaches automobile and EV dealerships around how thoroughly buyers now research vehicles online before ever visiting in person — the digital presence is built as a genuine showroom, not an afterthought to the physical one.",
+      "GraphikosX approaches automobile and EV dealerships around how thoroughly buyers now research vehicles online before ever visiting in person: the digital presence is built as a genuine showroom, not an afterthought to the physical one.",
     aeoAnswer:
-      "GraphikosX helps automobile and EV dealerships by building a digital showroom — clear specifications, comparison-ready content and a responsive enquiry process — so buyers who have already researched extensively online arrive at the dealership already leaning toward a decision.",
+      "GraphikosX helps automobile and EV dealerships by building a digital showroom: clear specifications, comparison-ready content and a responsive enquiry process, so buyers who have already researched extensively online arrive at the dealership already leaning toward a decision.",
     challenges: [
       { title: "Outdated Digital Showroom", description: "The website often doesn't reflect current inventory or specifications clearly, forcing a buyer to visit in person just to get information that should already be online." },
       { title: "Specification & Comparison Content Gaps", description: "Buyers want to compare models and specifications online before ever visiting, and that content is frequently missing or thin." },
@@ -551,7 +551,7 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ],
     buyerJourney: ["Research", "Specification Comparison", "Reviews", "Dealership Visit", "Purchase Decision"],
     buyerJourneyNote:
-      "Vehicle buyers typically research extensively online first — comparing specifications and reading reviews — before ever visiting a dealership, meaning much of the purchase decision is already shaped before an in-person conversation happens.",
+      "Vehicle buyers typically research extensively online first, comparing specifications and reading reviews, before ever visiting a dealership, meaning much of the purchase decision is already shaped before an in-person conversation happens.",
     trustSignals: [
       "Clear, accurate vehicle specifications and comparisons",
       "Transparent pricing and process information where applicable",
@@ -578,14 +578,14 @@ export const industryDetails: Record<string, IndustryDetail> = {
     ecosystem: ["Research", "Digital Showroom (Website)", "Specification Content", "Enquiry", "CRM / Follow-Up", "Dealership Visit"],
     transformation: { before: "A showroom buyers visit to get basic information.", after: "A digital showroom that's already done the persuading." },
     faqs: [
-      { q: "How important is the website compared to the physical dealership?", a: "Increasingly central — most buyers form a strong opinion before ever visiting, meaning the website is often doing more of the persuasion than the showroom floor." },
+      { q: "How important is the website compared to the physical dealership?", a: "Increasingly central. Most buyers form a strong opinion before ever visiting, meaning the website is often doing more of the persuasion than the showroom floor." },
       { q: "Does SEO work for local dealerships?", a: "Yes, particularly for model and location-specific searches, which capture buyers who are actively comparing dealerships in their area." },
-      { q: "How quickly should online enquiries be followed up?", a: "As quickly as realistically possible — buyers actively comparing vehicles are often enquiring with more than one dealership at the same time." },
-      { q: "Does this apply to EV dealerships specifically?", a: "Yes — EV buyers tend to research even more extensively given the category is newer to many buyers, making clear, accurate information especially important." },
+      { q: "How quickly should online enquiries be followed up?", a: "As quickly as realistically possible, since buyers actively comparing vehicles are often enquiring with more than one dealership at the same time." },
+      { q: "Does this apply to EV dealerships specifically?", a: "Yes. EV buyers tend to research even more extensively given the category is newer to many buyers, making clear, accurate information especially important." },
     ],
     ctaHeadline: "Audit Your Dealership's Digital Showroom",
     ctaSupportingCopy: "Get a free audit of how your dealership's digital showroom currently compares to buyer expectations.",
     metaTitle: "Digital Presence for Automobile & EV Dealers | GraphikosX",
-    metaDescription: "GraphikosX helps automobile and EV dealerships build a digital showroom — specs, comparison content and fast enquiry follow-up for research-heavy buyers.",
+    metaDescription: "GraphikosX helps automobile and EV dealerships build a digital showroom with specs, comparison content and fast enquiry follow-up for research-heavy buyers.",
   },
 };

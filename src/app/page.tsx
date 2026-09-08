@@ -1,3 +1,5 @@
+import { IntroSequence } from "@/components/motion/IntroSequence";
+import { GXCursor } from "@/components/motion/GXCursor";
 import { Hero } from "@/components/sections/Hero";
 import { CustomerJourney } from "@/components/sections/CustomerJourney";
 import { CostOfWaiting } from "@/components/sections/CostOfWaiting";
@@ -21,6 +23,14 @@ export default function Home() {
 
   return (
     <>
+      {/* Phase 5: must render first — its inline script has to run, and
+          decide whether to add the intro-pending class to <html>, before
+          Hero's markup exists in the DOM. See IntroSequence.tsx. */}
+      <IntroSequence />
+      {/* Phase 9 — full custom cursor. Mounted directly in this page's own
+          tree (not layout.tsx) so it structurally cannot leak onto any
+          other route — see GXCursor.tsx's own doc comment. */}
+      <GXCursor />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <Hero />
       <CustomerJourney />

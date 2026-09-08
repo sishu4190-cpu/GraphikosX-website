@@ -15,7 +15,7 @@ export function FreeAuditSuccess({ name, businessName }: { name: string; busines
         </svg>
       </span>
       <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-        Thank you{name ? `, ${name}` : ""} — your Free Audit request is in.
+        Thank you{name ? `, ${name}` : ""}, your Free Audit request is in.
       </h2>
       <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-grey-700">
         We&rsquo;ll go through what you shared and get back to you with what we find. If you&rsquo;d rather not wait, message us

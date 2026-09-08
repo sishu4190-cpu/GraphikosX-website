@@ -2,39 +2,63 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { company, primaryNav } from "@/lib/data/company";
 import { freeAuditHref } from "@/lib/freeAuditUrl";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
+// Scroll distance (px) over which the glass effect ramps from fully
+// transparent to fully "liquid glass" — see the `.gx-header-glass` comment
+// in globals.css for why this is a continuous progress value written
+// straight to a CSS custom property rather than a Tailwind class swapped at
+// a single threshold.
+const GLASS_RAMP_PX = 120;
+
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const rafId = useRef<number | null>(null);
 
   useEffect(() => {
-    // Single threshold drives both the glass background AND the height
-    // reduction together — one state, no separate "scrolling down" vs
-    // "scrolled" listeners fighting each other. Returns smoothly to the
-    // original transparent/full-height state near the top.
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    // `scrolled` still drives the discrete layout changes (header height,
+    // logo size) — those are a clean single step, not something that should
+    // visually interpolate pixel-by-pixel. The glass background/blur/shadow
+    // ramp is a separate, continuous value written directly to the header's
+    // own style from here, one write per animation frame at most (exactly
+    // CursorAtmosphere.tsx's rAF-throttled direct-DOM-write pattern) so fast
+    // scrolling never queues up a backlog of React re-renders — the actual
+    // paint work (recomputing the blur) happens on the compositor/GPU side
+    // regardless, this just keeps the JS side of it cheap.
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      if (rafId.current !== null) return;
+      rafId.current = requestAnimationFrame(() => {
+        rafId.current = null;
+        const progress = Math.min(window.scrollY / GLASS_RAMP_PX, 1);
+        headerRef.current?.style.setProperty("--gx-nav-progress", String(progress));
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    };
   }, []);
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b transition-[background-color,backdrop-filter,border-color] duration-300 ease-out ${
-        scrolled ? "border-ink/10 bg-paper/90 backdrop-blur-md" : "border-transparent bg-transparent"
-      }`}
+      ref={headerRef}
+      className="gx-header-glass sticky top-0 z-50 w-full border-b border-transparent transition-[border-color,box-shadow] duration-300 ease-out"
     >
       <Container
         className={`flex items-center justify-between transition-[height] duration-300 ease-out ${
           scrolled ? "h-16" : "h-20"
         }`}
       >
-        <Link href="/" className="flex items-center gap-3" aria-label="GraphikosX — Home">
+        <Link href="/" className="flex items-center gap-3" aria-label="GraphikosX home">
           {/*
             Logo mark sized up ~20–30% over the previous h-10/h-11 render size
             (40px → 48px mobile, 44px → 56px desktop) so the GX symbol reads
@@ -107,7 +131,7 @@ export function Header() {
       </Container>
 
       {open && (
-        <div className="border-t border-ink/10 bg-paper lg:hidden">
+        <div className="gx-header-glass-panel border-t border-ink/10 lg:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {primaryNav.map((item) => (
               <Link

@@ -7,24 +7,31 @@ export type Industry = {
 };
 
 // Canonical final list — the 10 industries GraphikosX specializes in
-// (Phase 2H). Four entries carry a Phase 2H display-name refinement while
-// keeping their original slug/route unchanged, specifically so existing
-// links, the sitemap and any external SEO equity are not disrupted:
+// (Phase 2H, updated Phase 3). Four entries carry a Phase 2H display-name
+// refinement while keeping their original slug/route unchanged,
+// specifically so existing links, the sitemap and any external SEO equity
+// are not disrupted:
 //   healthcare                 -> displayed as "Doctors & Clinics"
 //   legal-professional-services -> displayed as "Legal, CA & Professional Services"
 //   fitness-wellness           -> displayed as "Gyms & Fitness"
-//   hospitality                -> displayed as "Cafes & Restaurants"
 // "founders-personal-brands" (not part of the Phase 2H 10-industry list) has
 // been retired in favor of the newly added "jewellery-wedding" — see
 // CHANGELOG.md for the full reasoning. Its relevant-service cross-links were
 // reassigned rather than left dangling (see service-details.ts).
+//
+// Phase 3 update: "hospitality" (Cafes & Restaurants) has been retired and
+// replaced with a new "financial-services-wealth-management" industry, with
+// fully original content — this is a different vertical, not a display-name
+// refinement, so (unlike the four renames above) the old slug/route is NOT
+// reused. See CHANGELOG.md and the next.config.ts redirect for
+// /industries/hospitality.
 export const industries: Industry[] = [
   {
     slug: "healthcare",
     name: "Doctors & Clinics",
     shortLabel: "Doctors & Clinics",
     challenge: "Patients research a doctor or clinic extensively before booking, but the trust signals they're looking for online are often thin, outdated or inconsistent.",
-    opportunity: "Build the trust a patient needs before they ever call — clear credentials, real reviews and a clean appointment path.",
+    opportunity: "Build the trust a patient needs before they ever call: clear credentials, real reviews and a clean appointment path.",
   },
   {
     slug: "real-estate",
@@ -69,11 +76,11 @@ export const industries: Industry[] = [
     opportunity: "Build a recognisable local brand and content system that drives both trials and long-term retention.",
   },
   {
-    slug: "hospitality",
-    name: "Cafes & Restaurants",
-    shortLabel: "Cafes & Restaurants",
-    challenge: "Diners decide almost entirely on photos, reviews and how easy the place is to find — before ever seeing the menu in person.",
-    opportunity: "Win the discovery-and-reviews moment that decides footfall before a table is ever booked.",
+    slug: "financial-services-wealth-management",
+    name: "Financial Services & Wealth Management",
+    shortLabel: "Financial Services",
+    challenge: "Money decisions are high-consequence and rarely made on trust alone, yet most firms' digital presence does little to build the credibility a prospect needs before the first real conversation.",
+    opportunity: "Build the credibility a client needs before they trust a firm with their money: precise, compliance-conscious and visible well before the first consultation.",
   },
   {
     slug: "architecture-interior",

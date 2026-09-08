@@ -16,7 +16,7 @@ export function RelevantServices({ detail }: { detail: IndustryDetail }) {
     <section className="relative overflow-hidden bg-grey-100 py-16 md:py-24">
       <CursorAtmosphere tone="light" />
       <Container className="relative">
-        <SectionHeader eyebrow="What GraphikosX Builds" title="The services that matter most here." description="Not all 15 — the ones with a genuine reason to be here." />
+        <SectionHeader eyebrow="What GraphikosX Builds" title="The services that matter most here." description="Not all 15: the ones with a genuine reason to be here." />
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {resolved.map((rs, i) => (

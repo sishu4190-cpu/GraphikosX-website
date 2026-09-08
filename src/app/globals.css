@@ -36,13 +36,44 @@
   --color-grey-500: var(--color-grey-500);
   --color-grey-300: var(--color-grey-300);
   --color-grey-100: var(--color-grey-100);
-  --font-display: "Manrope Variable", "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* `--font-inter` / `--font-manrope` come from next/font/local in
+     layout.tsx (see that file's doc comment) — a CLS-safe replacement for
+     the plain @fontsource `@font-face` imports this used before, same
+     underlying font files. The literal "Inter"/"Manrope" names are no
+     longer registered by anything (fontsource's CSS isn't imported
+     anymore), so the fallback chain goes straight to system fonts if the
+     next/font variable is ever somehow unavailable. */
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* Phase 3 (Lenis): `scroll-behavior: smooth` on <html> is deliberately NOT
+   set here anymore. Before Lenis existed, this made anchor/keyboard/
+   scrollbar-driven scrolls glide instead of jump — harmless on its own.
+   Once Lenis's root mode is mounted, though, it drives `window.scrollTo()`
+   itself on every animation frame (for wheel-driven scrolling); any scroll
+   Lenis does NOT originate — pressing PageDown/Space/Home/End, dragging the
+   scrollbar thumb — would otherwise trigger the *browser's own* native
+   smooth-scroll animation via this CSS property at the same time, and the
+   two fight every frame. Confirmed with this rule present vs. removed: a
+   burst of rapid, repeated PageDown presses noticeably lost ground with it
+   present and covered meaningfully more of the page with it removed.
+   Mouse-wheel scrolling was never affected either way (Lenis intercepts
+   wheel events directly and never hands them to the browser's native
+   smooth-scroll path). Lenis's own `duration`/`easing` options (see
+   SmoothScrollProvider.tsx) are what "smooth" now means on this site; this
+   property staying unset does not make keyboard/scrollbar scrolling feel
+   abrupt in a bad way — it makes it instant, which is the correct,
+   un-fought behavior.
+
+   Separately, and NOT fixed by this rule: this specific homepage (heavy
+   with scroll/viewport-linked sections and an always-rendering WebGL hero)
+   can still feel like it's dropping input under an aggressive, rapid-fire
+   burst of keyboard presses — confirmed present even on the pre-Lenis,
+   pre-Phase-1 version of this exact page, so it predates this project's
+   changes and isn't a Lenis/GSAP regression. Flagged separately to the
+   user rather than "fixed" here, since the honest fix is likely pausing
+   the hero's WebGL render loop when it's off-screen, not a CSS change. */
 
 /* WCAG AA contrast fixes (Phase 2F accessibility audit, verified with
    Lighthouse) — two brand tokens are tuned for one background but fail
@@ -66,9 +97,6 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -489,6 +517,37 @@ body {
   }
 }
 
+/* Second, slower/larger/offset glow layer — GXFallback.tsx only (Phase 6
+   note there). Deliberately a different position, size and period than
+   `.gx-hero-glow` above (not just a duplicate at lower opacity) so the two
+   layers cross-fade into each other rather than visibly pulsing in unison. */
+.gx-hero-glow-secondary {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(closest-side at 62% 42%, rgba(29, 78, 216, 0.1), transparent 70%);
+  filter: blur(64px);
+  opacity: 0.5;
+  animation: gx-hero-glow-secondary-drift 16s ease-in-out infinite;
+}
+
+@keyframes gx-hero-glow-secondary-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-2%, 1.5%, 0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-hero-glow-secondary {
+    animation: none;
+  }
+}
+
 /* Blue-highlighted word "light sweep" — one gradient pass across accent text
    after it reveals, driven by AnimatedText.tsx's ShineText (framer-motion
    animates background-position once; this class supplies the gradient +
@@ -708,6 +767,207 @@ body {
   }
 }
 
+/* ==========================================================================
+   Phase 3, item 2 — context-aware cursor states (CursorState.tsx). A single,
+   sitewide ring (not per-section, unlike gx-cursor-atmosphere above) that
+   follows the pointer and changes scale/tint depending on what it's
+   hovering — hover intent reads clearly without hiding or replacing the
+   native OS cursor anywhere on the site (full custom-cursor replacement is
+   reserved for Tier 2's two pages).
+
+   Position tracking uses the standalone `translate` property (not
+   `transform`) so it can update every frame with zero transition — instant,
+   tight cursor-follow — while `scale`/color changes on hover use their own
+   independent transition. Splitting these across `translate`/`scale`
+   instead of packing both into a single `transform` is what makes that
+   possible without one fighting the other's timing.
+   ========================================================================== */
+.gx-cursor-ring {
+  --gx-ring-x: 50vw;
+  --gx-ring-y: 50vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  margin-top: -14px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(29, 78, 216, 0.35);
+  background: transparent;
+  pointer-events: none;
+  opacity: 0;
+  translate: var(--gx-ring-x) var(--gx-ring-y);
+  scale: 0.8;
+  transition: opacity 0.2s ease-out, scale 0.15s ease-out, background-color 0.15s ease-out, border-color 0.15s ease-out;
+  will-change: translate;
+}
+
+/* CursorState.tsx adds this only after the first genuine pointer move, so
+   the ring never flashes at a stale/centered position before real cursor
+   data exists. */
+.gx-cursor-ring.is-active {
+  opacity: 1;
+}
+
+.gx-cursor-ring[data-cursor-state="link"] {
+  scale: 1.3;
+  border-color: rgba(29, 78, 216, 0.55);
+}
+
+.gx-cursor-ring[data-cursor-state="button"] {
+  scale: 1.7;
+  background: rgba(29, 78, 216, 0.12);
+  border-color: rgba(29, 78, 216, 0.6);
+}
+
+/* Touch/coarse-pointer: there's no persistent pointer to track, and
+   CursorState.tsx never attaches its listeners on these devices — this is
+   the render-agnostic CSS guarantee to match (the element still mounts
+   identically for SSR/hydration; only its paint is suppressed). */
+@media (pointer: coarse) {
+  .gx-cursor-ring {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-cursor-ring {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Phase 9 — full custom cursor (GXCursor.tsx), scoped to `/` and `/work`.
+   Unlike `.gx-cursor-ring` above, no route-scoping media/attribute guard is
+   needed here at all: GXCursor.tsx only ever mounts inside those two pages'
+   own component trees, so its very existence in the DOM already is the
+   scoping. What's left for CSS to do is purely the visual states.
+   ========================================================================== */
+body.gx-cursor-active {
+  cursor: none;
+}
+
+/* The only coordination point with CursorState.tsx (its file is otherwise
+   untouched): its lighter, native-cursor-preserving ring is a Tier 1
+   sitewide affordance, so it's suppressed for as long as this full
+   replacement owns the pointer, rather than letting both render at once. */
+body.gx-cursor-active .gx-cursor-ring {
+  display: none;
+}
+
+.gx-cursor {
+  --gx-cursor-x: 50vw;
+  --gx-cursor-y: 50vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0;
+  translate: var(--gx-cursor-x) var(--gx-cursor-y);
+  transition: opacity 0.2s ease-out;
+  will-change: translate;
+}
+
+/* Added by GXCursor.tsx only after the first genuine pointer move, so the
+   cursor never flashes at a stale/centered position on load — same guard
+   `.gx-cursor-ring.is-active` uses above. */
+.gx-cursor.is-active {
+  opacity: 1;
+}
+
+.gx-cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 9999px;
+  background: #1d4ed8;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.gx-cursor-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px 11px 16px;
+  margin-left: -46px;
+  margin-top: -19px;
+  border-radius: 9999px;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.gx-cursor-icon {
+  width: 14px;
+  height: 14px;
+  display: none;
+  flex-shrink: 0;
+}
+
+.gx-cursor-word {
+  display: none;
+}
+
+/* State: "drag" (homepage hero mark) / "play" (/work grid) — both collapse
+   the plain dot and expand the pill; which icon/word inside the pill shows
+   is picked by the matching state below. "view" (the default, unset state)
+   shows only the plain dot. */
+.gx-cursor[data-gx-cursor-state="drag"] .gx-cursor-dot,
+.gx-cursor[data-gx-cursor-state="play"] .gx-cursor-dot {
+  transform: scale(0);
+  opacity: 0;
+}
+
+.gx-cursor[data-gx-cursor-state="drag"] .gx-cursor-pill,
+.gx-cursor[data-gx-cursor-state="play"] .gx-cursor-pill {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.gx-cursor[data-gx-cursor-state="drag"] .gx-cursor-icon-drag,
+.gx-cursor[data-gx-cursor-state="drag"] .gx-cursor-word-drag {
+  display: block;
+}
+
+.gx-cursor[data-gx-cursor-state="play"] .gx-cursor-icon-play,
+.gx-cursor[data-gx-cursor-state="play"] .gx-cursor-word-play {
+  display: block;
+}
+
+/* Touch/coarse-pointer and reduced-motion: GXCursor.tsx never mounts this
+   markup at all on those devices (a genuine non-mount — see the
+   component's capability-gate effect — not just a hidden element), so
+   these rules are belt-and-braces only, matching `.gx-cursor-ring`'s own
+   pattern above. */
+@media (pointer: coarse) {
+  .gx-cursor {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-cursor {
+    display: none;
+  }
+}
+
 /* "GraphikosX connects the pieces" hub -> card arrival pulse (Real Problem
    section). Fires once per card the moment HubConnectors' traveling energy
    dot reaches it (timed in DigitalPresenceProblem.tsx to match), then
@@ -759,5 +1019,274 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .gx-step-pulse {
     animation: none;
+  }
+}
+
+/* ==========================================================================
+   Phase 5 — first-load intro (IntroSequence.tsx). Builds the logo in as a
+   smooth-curved <path> (see IntroSequence.tsx's RING_PATH doc comment for
+   why this replaced the original straight-line <polygon>), runs a 1->100
+   loading counter bottom-left, then zooms the mark up while the curtain
+   fades — the reveal transition — once the counter reaches 100.
+
+   Hidden by default (opacity:0, visibility:hidden, pointer-events:none) —
+   this is the state on every route, every repeat visit, and under reduced
+   motion. It only ever becomes visible when `html.gx-intro-pending` is
+   present, which IntroSequence.tsx's synchronous inline script adds (or
+   doesn't) *before first paint*, so there is no flash of the wrong state in
+   either direction. `pointer-events: none` stays on regardless of that
+   class — the real homepage underneath is interactive/scrollable from
+   frame one, whether or not the intro is currently playing; nothing here
+   ever touches <body>. See IntroSequence.tsx for the full rationale. */
+.gx-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above the header (z-50), cursor ring (z-60), and WhatsApp button (z-40) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-paper);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.gx-intro-pending .gx-intro {
+  visibility: visible;
+  opacity: 1;
+  /* Holds here indefinitely — no animation-delay-based timer. The reveal
+     below is gated by `.gx-intro-revealing`, which IntroSequence.tsx's JS
+     adds at the *exact* moment its counter reaches 100, not at a fixed
+     CSS delay that would drift out of sync with that counter. */
+}
+
+html.gx-intro-pending .gx-intro.gx-intro-revealing {
+  animation: gx-intro-curtain-out 500ms ease-in forwards;
+}
+
+.gx-intro-mark {
+  width: min(40vw, 220px);
+  height: auto;
+  overflow: visible;
+}
+
+html.gx-intro-pending .gx-intro.gx-intro-revealing .gx-intro-mark {
+  animation: gx-intro-mark-zoom 500ms ease-in forwards;
+}
+
+.gx-intro-mark polygon,
+.gx-intro-mark path {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Stage 1 — stroke draw-on, staggered slightly per shape so the mark reads
+   as assembling rather than all three outlines snapping in at once. The
+   ring's dasharray/dashoffset are set inline in IntroSequence.tsx (its real
+   measured path length, 1582 — see RING_PATH_LENGTH there); the two straight
+   blades' perimeters are measured the same way and set here. */
+html.gx-intro-pending .gx-intro-ring-stroke {
+  animation: gx-intro-draw 800ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+html.gx-intro-pending .gx-intro-blade-1 {
+  stroke-dasharray: 1320;
+  stroke-dashoffset: 1320;
+  animation: gx-intro-draw 650ms cubic-bezier(0.65, 0, 0.35, 1) 150ms forwards;
+}
+
+html.gx-intro-pending .gx-intro-blade-2 {
+  stroke-dasharray: 1020;
+  stroke-dashoffset: 1020;
+  animation: gx-intro-draw 500ms cubic-bezier(0.65, 0, 0.35, 1) 300ms forwards;
+}
+
+/* Stage 2 — solid fill fades in over the completed stroke outline (750ms,
+   just before the slowest stroke finishes drawing at 800ms, so the two
+   stages overlap slightly rather than leaving a visible gap). */
+.gx-intro-ring-fill,
+.gx-intro-blade-fill {
+  opacity: 0;
+}
+
+html.gx-intro-pending .gx-intro-ring-fill,
+html.gx-intro-pending .gx-intro-blade-fill {
+  animation: gx-intro-fill-in 300ms ease-out 750ms forwards;
+}
+
+@keyframes gx-intro-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes gx-intro-fill-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gx-intro-curtain-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* Reveal — mark scales up ~18x from its own center (comfortably covers
+   any normal viewport from a 220px base) while fading out over the same
+   500ms window the curtain itself is fading, so both finish together
+   rather than the mark hard-cutting out mid-zoom. */
+@keyframes gx-intro-mark-zoom {
+  to {
+    transform: scale(18);
+    opacity: 0;
+  }
+}
+
+/* Loading counter + progress bar, bottom-left, styled after the reference
+   preloader. `font-variant-numeric: tabular-nums` keeps digit widths
+   constant so the number doesn't jitter sideways as it counts up. Both the
+   number text and the bar's scaleX are written directly to these nodes via
+   refs in IntroSequence.tsx's rAF loop, not React state — see that file's
+   doc comment for why. */
+.gx-intro-counter {
+  position: absolute;
+  left: 2.5rem;
+  bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Large percentage number, per the reference preloader — sized well above
+   the old 1.5rem so it reads as the dominant element in this corner, not a
+   caption next to the bar. `line-height: 1` keeps the bigger font from
+   pushing the bar down further than intended. */
+.gx-intro-counter-number {
+  font-family: var(--font-display);
+  font-size: clamp(2.75rem, 6vw, 4.5rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thin rectangular progress track — width scaled up to balance the larger
+   number above it, track darkened slightly so the unfilled portion stays
+   visibly a rectangle (not just a hairline) at a glance. */
+.gx-intro-counter-bar {
+  width: 200px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.gx-intro-counter-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--color-ink);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+/* ==========================================================================
+   "Liquid glass" nav bar (Header.tsx). Same sticky/blur foundation that
+   already existed (position: sticky, backdrop-blur, bg-paper/90 past a
+   scroll threshold) — this replaces the old hard on/off flip at 24px with a
+   continuous 0-1 `--gx-nav-progress` value Header.tsx writes directly to
+   this element's style from a rAF-throttled scroll listener, the same
+   direct-DOM-write-no-React-state technique `gx-cursor-atmosphere` above and
+   `GlowCard.tsx` already use for their own per-frame values. `calc()` reads
+   of a custom property don't need `@property` registration or a CSS
+   `transition` to feel smooth here — the smoothness comes from the JS side
+   writing a new value every animation frame while scrolling, exactly like
+   the cursor-glow position does.
+
+   Backdrop blur is genuinely translucent at every point along the ramp
+   (never the old flat `bg-paper/90`), so page content passing underneath is
+   actually visible-through-frosted-glass rather than hidden behind a
+   near-opaque bar the moment you scroll — the effect iOS calls "Liquid
+   Glass". `saturate()` is layered on top of the blur (also standard in that
+   style) so colors showing through the glass read a little richer than a
+   plain blur alone gives you. Values are plain rgba/px against the
+   already-known --color-paper (#fff) / --color-ink (#000) tokens rather than
+   `color-mix()`, so this needs no extra browser-support caveat beyond
+   `backdrop-filter` itself.
+
+   Graceful fallback: a browser that ignores `backdrop-filter` entirely just
+   keeps the plain `background-color` ramp above (transparent at the top,
+   ~90% white once scrolled) — still fully readable, no blur, nothing
+   visually broken. Both `backdrop-filter` and its `-webkit-` prefix are
+   emitted automatically by this project's Tailwind v4 / Lightning CSS build
+   for every OTHER backdrop-blur utility already in use sitewide, but this
+   rule is hand-written (not a Tailwind utility, since its blur/saturate
+   amounts are computed from a live custom property rather than a fixed
+   class), so both are written out explicitly here for the same coverage. */
+.gx-header-glass {
+  --gx-nav-progress: 0;
+  background-color: rgba(255, 255, 255, calc(var(--gx-nav-progress) * 0.92));
+  backdrop-filter: blur(calc(var(--gx-nav-progress) * 18px)) saturate(calc(100% + var(--gx-nav-progress) * 80%));
+  -webkit-backdrop-filter: blur(calc(var(--gx-nav-progress) * 18px)) saturate(calc(100% + var(--gx-nav-progress) * 80%));
+  border-bottom-color: rgba(0, 0, 0, calc(var(--gx-nav-progress) * 0.08));
+  box-shadow: 0 12px 30px -16px rgba(10, 12, 18, calc(var(--gx-nav-progress) * 0.22));
+}
+
+/* The mobile dropdown panel (open state) sits directly beneath the header
+   and reads as a continuation of the same glass surface rather than a flat
+   white sheet — full progress value (its whole reason to exist is that the
+   user has already interacted, so there's no "at the top of the page" case
+   to ramp up from). */
+.gx-header-glass-panel {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* ==========================================================================
+   Touch glow trail for the GX hologram (GXTouchGlow.tsx) — mounted only
+   inside GXHero.tsx's "full" and "lite" 3D modes (GXScene.tsx /
+   GXSceneLite.tsx), never alongside the static SVG fallback. Same
+   direct-CSS-custom-property architecture as `.gx-cursor-atmosphere` above
+   (position written straight to this element's `style` from a rAF loop,
+   never React state), but a smaller, more concentrated circle (~220px vs.
+   cursor-atmosphere's 480px) for a "smoky trail following the finger" feel
+   rather than a broad ambient wash, and — unlike cursor-atmosphere, which
+   is always at least faintly present — only ever visible while `.is-active`
+   (an actual drag in progress) is present, since a persistent glow with no
+   drag happening would just read as noise rather than a response to touch.
+   Deliberately a soft radial-gradient, never `filter: blur()` over an area
+   this size, for the same cheap-glow reasoning documented on
+   `.gx-cursor-atmosphere` above.
+   ========================================================================== */
+.gx-touch-glow {
+  --gx-touch-glow-x: 50%;
+  --gx-touch-glow-y: 50%;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(
+    220px circle at var(--gx-touch-glow-x) var(--gx-touch-glow-y),
+    rgba(29, 78, 216, 0.22),
+    rgba(29, 78, 216, 0.08) 45%,
+    transparent 72%
+  );
+}
+
+.gx-touch-glow.is-active {
+  opacity: 1;
+}
+
+/* prefers-reduced-motion hard override, same belt-and-braces pattern as
+   `.gx-cursor-atmosphere` — GXTouchGlow.tsx also skips its rAF loop
+   entirely client-side, so this is a render-agnostic second guarantee, not
+   the only one. */
+@media (prefers-reduced-motion: reduce) {
+  .gx-touch-glow {
+    display: none;
   }
 }

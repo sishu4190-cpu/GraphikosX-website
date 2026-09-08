@@ -4,11 +4,14 @@ import { Reveal } from "@/components/motion/Reveal";
 import { GlowCard } from "@/components/motion/GlowCard";
 import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 
-const qa = [
-  { q: "What does GraphikosX do?", a: "GraphikosX builds and runs the digital systems a business needs to be found, trusted and chosen — combining strategy, branding, technology, content and AI." },
+// Exported so services/page.tsx can feed this same list into
+// faqPageSchema() — one array, both the visible copy and the structured
+// data, so they can never drift apart (Phase 10 SEO/AEO gap fix).
+export const qa = [
+  { q: "What does GraphikosX do?", a: "GraphikosX builds and runs the digital systems a business needs to be found, trusted and chosen, combining strategy, branding, technology, content and AI." },
   { q: "What is Build / Grow / Scale?", a: "It's the order most businesses actually need work done in: build the foundation (brand, website), grow visibility and authority (SEO, content, social), then scale with systems (CRM, automation, lead generation)." },
-  { q: "Does GraphikosX provide AI automation?", a: "Yes — AI automation, CRM integration, workflow automation and lead generation systems are part of the Scale stage, built once the foundation and visibility work is in place." },
-  { q: "How are services selected for a business?", a: "Through the Discover and Audit stages of the process (see How We Work) — services are prioritised based on where a business is today, not sold as a fixed package." },
+  { q: "Does GraphikosX provide AI automation?", a: "Yes. AI automation, CRM integration, workflow automation and lead generation systems are part of the Scale stage, built once the foundation and visibility work is in place." },
+  { q: "How are services selected for a business?", a: "Through the Discover and Audit stages of the process (see How We Work), with services prioritised based on where a business is today, not sold as a fixed package." },
 ];
 
 export function ServicesAnswers() {

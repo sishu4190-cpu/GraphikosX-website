@@ -10,6 +10,7 @@ This file is a supplementary, machine-readable index for AI systems. It does not
 - [About](https://graphikosx.in/about): Why GraphikosX exists, what it believes, and its founder.
 - [Services](https://graphikosx.in/services): All 15 services, organised into Build, Grow and Scale.
 - [Industries](https://graphikosx.in/industries): All 10 industries GraphikosX works with, and why.
+- [Our Work](https://graphikosx.in/work): A real, full-scope GraphikosX engagement for Mangalam Acid and Chemicals (MAAC) — website, product catalogue, and visual identity.
 - [Free Audit](https://graphikosx.in/free-audit): Request a free digital presence audit.
 - [Contact](https://graphikosx.in/contact): Get in touch with GraphikosX.
 
@@ -39,16 +40,16 @@ This file is a supplementary, machine-readable index for AI systems. It does not
 
 ## Industries
 
-- [Industrial Manufacturing & Chemicals](https://graphikosx.in/industries/industrial-manufacturing-chemicals)
-- [Healthcare](https://graphikosx.in/industries/healthcare)
+- [Doctors & Clinics](https://graphikosx.in/industries/healthcare)
 - [Real Estate](https://graphikosx.in/industries/real-estate)
 - [Education & Coaching](https://graphikosx.in/industries/education-coaching)
+- [Jewellery & Wedding](https://graphikosx.in/industries/jewellery-wedding)
+- [Industrial Manufacturing & Chemicals](https://graphikosx.in/industries/industrial-manufacturing-chemicals)
+- [Legal, CA & Professional Services](https://graphikosx.in/industries/legal-professional-services)
+- [Gyms & Fitness](https://graphikosx.in/industries/fitness-wellness)
+- [Financial Services & Wealth Management](https://graphikosx.in/industries/financial-services-wealth-management)
 - [Architecture & Interior](https://graphikosx.in/industries/architecture-interior)
-- [Legal & Professional Services](https://graphikosx.in/industries/legal-professional-services)
-- [Fitness & Wellness](https://graphikosx.in/industries/fitness-wellness)
-- [Hospitality](https://graphikosx.in/industries/hospitality)
-- [Automotive & EV](https://graphikosx.in/industries/automotive-ev)
-- [Founders & Personal Brands](https://graphikosx.in/industries/founders-personal-brands)
+- [Automobile & EV](https://graphikosx.in/industries/automotive-ev)
 
 ## Contact
 

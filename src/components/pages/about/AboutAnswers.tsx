@@ -4,14 +4,17 @@ import { Reveal } from "@/components/motion/Reveal";
 import { GlowCard } from "@/components/motion/GlowCard";
 import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 
-const qa = [
+// Exported so about/page.tsx can feed this same list into faqPageSchema()
+// — one array, both the visible copy and the structured data, so they can
+// never drift apart (Phase 10 SEO/AEO gap fix).
+export const qa = [
   {
     q: "What is GraphikosX?",
     a: "GraphikosX is an AI-driven digital presence agency that combines strategy, branding, technology, content and AI to build authority, visibility, trust and scalable digital systems for businesses.",
   },
   {
     q: "What makes GraphikosX different?",
-    a: "GraphikosX builds connected digital systems rather than selling isolated services — a website, SEO, content, social and automation designed to work toward one business objective instead of existing as separate vendor relationships.",
+    a: "GraphikosX builds connected digital systems rather than selling isolated services: a website, SEO, content, social and automation designed to work toward one business objective instead of existing as separate vendor relationships.",
   },
   {
     q: "Why does GraphikosX specialize by industry?",
@@ -19,7 +22,7 @@ const qa = [
   },
   {
     q: "How does GraphikosX use AI?",
-    a: "AI accelerates research, analysis and execution — it is the advantage, not the product. Human strategy still drives every decision GraphikosX makes on a client's behalf.",
+    a: "AI accelerates research, analysis and execution. It is the advantage, not the product. Human strategy still drives every decision GraphikosX makes on a client's behalf.",
   },
 ];
 

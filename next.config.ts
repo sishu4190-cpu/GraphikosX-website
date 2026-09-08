@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createBundleAnalyzer from "@next/bundle-analyzer";
 
 /**
  * Security headers — Phase 2F.
@@ -62,6 +63,21 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Phase 3: "hospitality" (Cafes & Restaurants) was retired in favor of a
+  // new "financial-services-wealth-management" industry — a different
+  // vertical, not a display-name rename, so (unlike the Phase 2H display
+  // renames, which kept their original slugs) there is no replacement page
+  // for this exact URL. Permanent redirect to the Industries hub rather
+  // than leaving the old URL 404ing or serving unrelated content.
+  async redirects() {
+    return [
+      {
+        source: "/industries/hospitality",
+        destination: "/industries",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       // Free Audit / Contact are small text forms — 256kb is generous
@@ -72,4 +88,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Tier 1 exit checklist (see the phased plan): confirms GSAP/Lenis are paid
+// for once, in the shared layout chunk, and that nothing Tier-2-specific
+// (postprocessing, the future showcase page's WebGL textures) leaks into a
+// route that doesn't use it. Off by default — zero cost/behavior change for
+// a normal build or `next dev` — only active when run as
+// `ANALYZE=true npm run build`, which opens the client/server bundle
+// treemaps in the browser after the build finishes.
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withBundleAnalyzer(nextConfig);

@@ -8,20 +8,6 @@ export function FounderSection() {
   return (
     <section className="relative overflow-hidden bg-paper py-24 md:py-32">
       <CursorAtmosphere tone="light" />
-      {/* Subtle GX motif — an abstract arc echo, not the logo itself, purely decorative */}
-      <svg
-        aria-hidden
-        viewBox="0 0 400 400"
-        className="pointer-events-none absolute -right-16 top-1/2 h-[420px] w-[420px] -translate-y-1/2 opacity-[0.05] md:opacity-[0.07]"
-      >
-        <path
-          d="M 200 60 A 140 140 0 1 0 262 308"
-          fill="none"
-          stroke="#1D4ED8"
-          strokeWidth="26"
-          strokeLinecap="round"
-        />
-      </svg>
 
       <Container className="relative max-w-3xl">
         <Reveal>

@@ -10,11 +10,11 @@ const TITLE = "Terms of Service";
 const DESCRIPTION = "The terms that apply to your use of the GraphikosX website.";
 const UPDATED = "10 August 2026";
 
-export const metadata: Metadata = buildMetadata({ title: `${TITLE} — GraphikosX`, description: DESCRIPTION, path: PATH, noIndex: true });
+export const metadata: Metadata = buildMetadata({ title: `${TITLE} | GraphikosX`, description: DESCRIPTION, path: PATH, noIndex: true });
 
 export default function TermsPage() {
   const schema = pageSchemaGraph([
-    webPageSchema({ id: "terms", name: `${TITLE} — GraphikosX`, description: DESCRIPTION, path: PATH }),
+    webPageSchema({ id: "terms", name: `${TITLE} | GraphikosX`, description: DESCRIPTION, path: PATH }),
     breadcrumbSchema([
       { name: "Home", path: "/" },
       { name: TITLE, path: PATH },
@@ -47,9 +47,9 @@ export default function TermsPage() {
 
         <h2>Service engagements</h2>
         <p>
-          Any paid engagement for GraphikosX services — strategy, branding, websites, marketing, automation or any other
-          service listed on this Site — is governed by a separate proposal, agreement or contract signed between
-          GraphikosX and the client. Nothing on this Site constitutes such an agreement on its own.
+          Any paid engagement for GraphikosX services, including strategy, branding, websites, marketing, automation or
+          any other service listed on this Site, is governed by a separate proposal, agreement or contract signed
+          between GraphikosX and the client. Nothing on this Site constitutes such an agreement on its own.
         </p>
 
         <h2>No guarantee of results</h2>

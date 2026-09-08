@@ -17,7 +17,7 @@ export function Hero() {
           centered on the mark itself (see GXScene.tsx), so the mouse-control
           interaction never risks capturing clicks meant for the CTA buttons. */}
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block">
-        <GXHero />
+        <GXHero layout="lg-up" />
       </div>
 
       <Container>
@@ -57,7 +57,7 @@ export function Hero() {
       </Container>
 
       <div className="relative mt-16 h-72 w-full lg:hidden">
-        <GXHero />
+        <GXHero layout="below-lg" />
       </div>
     </section>
   );

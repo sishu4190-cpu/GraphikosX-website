@@ -25,7 +25,7 @@ export function buildMetadata({ title, description, path, ogImage, noIndex }: Bu
       url,
       siteName: company.name,
       type: "website",
-      images: [{ url: image, width: 1200, height: 630, alt: `${company.name} — ${title}` }],
+      images: [{ url: image, width: 1200, height: 630, alt: `${company.name} | ${title}` }],
     },
     twitter: {
       card: "summary_large_image",

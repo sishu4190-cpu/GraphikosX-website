@@ -1,7 +1,7 @@
 import { Container } from "@/components/ui/Container";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { ScrollActivationTimeline } from "@/components/motion/ScrollActivationTimeline";
 import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
+import { ScrollScrubTimelineHost } from "@/components/motion/ScrollScrubTimelineHost";
 
 const steps = [
   { id: "search", number: "01", label: "Search", detail: "Google" },
@@ -24,7 +24,13 @@ export function CustomerJourney() {
           description="Your digital presence is influencing buying decisions before your sales team is ever involved."
         />
 
-        <ScrollActivationTimeline steps={steps} className="mt-20" />
+        {/* Phase 2 pilot (GSAP + ScrollTrigger): this section's steps light
+            up scrubbed to scroll position rather than on a fixed timer — see
+            ScrollScrubTimelineHost.tsx / ScrollScrubTimeline.tsx for the full
+            explanation. Phase 2b rolled the same component out to
+            HowWeWork.tsx and (a dedicated fork of) BuyerJourney.tsx once this
+            pilot was approved. */}
+        <ScrollScrubTimelineHost steps={steps} className="mt-20" />
       </Container>
     </section>
   );

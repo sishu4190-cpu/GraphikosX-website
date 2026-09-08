@@ -18,7 +18,7 @@ export function StepPresence({
         onChange={(v) => update("hasPresence", v as FreeAuditFormState["hasPresence"])}
         options={[
           { value: "yes", label: "Yes, I have something live" },
-          { value: "no", label: "Not yet — starting from scratch" },
+          { value: "no", label: "Not yet, starting from scratch" },
         ]}
         required
       />
@@ -31,7 +31,7 @@ export function StepPresence({
       {form.hasPresence === "yes" && (
         <div className="space-y-6 rounded-2xl border border-ink/10 bg-grey-100/60 p-5">
           <p className="text-sm text-grey-700">
-            Share whatever you have — any of these can be left blank.
+            Share whatever you have. Any of these can be left blank.
           </p>
           <TextField
             label="Website URL"
@@ -70,7 +70,7 @@ export function StepPresence({
 
       {form.hasPresence === "no" && (
         <p className="rounded-2xl border border-ink/10 bg-grey-100/60 p-5 text-sm text-grey-700">
-          No problem — we&rsquo;ll factor that in. Skip ahead to the next step.
+          No problem. We&rsquo;ll factor that in. Skip ahead to the next step.
         </p>
       )}
     </div>
