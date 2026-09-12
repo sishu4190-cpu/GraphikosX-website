@@ -156,7 +156,25 @@ export function IndustriesSystem() {
           </div>
 
           <Reveal key={activeIndustry.slug}>
-            <div className="gx-card gx-card--dark rounded-2xl bg-surface p-10">
+            <div className="gx-card gx-card--dark relative overflow-hidden rounded-2xl bg-surface p-10">
+              {/* Same "solid on the text side, muted image on the far side"
+                  treatment as the homepage teaser's card — z-0 so it sits
+                  below .gx-card-content (z-index: 1 from the shared gx-card
+                  rules) and below nothing else, since the hover-glow
+                  ::before is also z-0 and a faint radial highlight either
+                  way it stacks against the image. */}
+              <div className="absolute inset-0 z-0" aria-hidden>
+                <Image
+                  src={activeIndustry.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 760px, 100vw"
+                  className="object-cover opacity-35"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-surface/25" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface/50 via-transparent to-transparent" />
+              </div>
+
               <div className="gx-card-content">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-grey-500">
                   {String(active + 1).padStart(2, "0")} / 10
@@ -183,7 +201,15 @@ export function IndustriesSystem() {
         {/* Mobile / tablet: accessible vertical list, no hover dependency */}
         <div className="flex flex-col divide-y divide-white/10 lg:hidden">
           {industries.map((industry, i) => (
-            <Link key={industry.slug} href={`/industries/${industry.slug}`} className="gx-card gx-card--dark block rounded-none py-6">
+            <Link key={industry.slug} href={`/industries/${industry.slug}`} className="gx-card gx-card--dark relative block overflow-hidden rounded-none py-6">
+              {/* Mobile gets the same treatment but fading from the bottom
+                  instead of a side — full-width rows here are too narrow for
+                  a left/right split to read cleanly, but there's plenty of
+                  vertical room below the text before the next row starts. */}
+              <div className="absolute inset-0 z-0" aria-hidden>
+                <Image src={industry.image} alt="" fill sizes="100vw" className="object-cover opacity-25" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/85 to-surface/40" />
+              </div>
               <div className="gx-card-content">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-grey-500">{String(i + 1).padStart(2, "0")} / 10</p>
                 <h2 className="mt-2 font-display text-xl font-bold">{industry.name}</h2>

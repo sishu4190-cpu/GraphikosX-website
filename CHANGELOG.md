@@ -2154,3 +2154,44 @@ true center, both mobile and desktop. Reflection pool visually confirmed
 as a rounded blue-tinted shape (not a line) at multiple rotation angles,
 both scene tiers.
 
+
+## Industry background images on the "10 industries" hub card
+
+Added a matching background photo/visual for each of the 10 industries to
+the hub-and-spoke section's detail card — on both the homepage
+(`IndustriesTeaser.tsx`) and the dedicated `/industries` page's own version
+of the same UI (`IndustriesSystem.tsx`).
+
+**Data:** `industries.ts` gained an `image` field per industry, pointing to
+`public/industries/<slug>.jpg` (10 new files, each resized to 1200px wide
+and compressed to ~105-135KB JPEGs).
+
+**Treatment — image visible, text always readable:** the image sits behind
+the text as a muted background layer (35% opacity on desktop, 25% on the
+mobile list, where the card is narrower and text needs more contrast
+margin), with a gradient scrim on top. On desktop, the gradient runs
+left-to-right: fully solid over the text column on the left, fading toward
+the image on the right, so the two never fight for the same space. On
+mobile — where each row is a single narrow column, not a left/right split —
+the gradient runs top-to-bottom instead: solid behind the headline and
+paragraph, fading in below where there's empty room before the next row.
+Applied identically to the `/industries` page's mobile list, which already
+had card styling to build on.
+
+**Left as-is, deliberately:** the homepage teaser's own mobile view (a
+plain text list with no card background at all) was not given an image —
+adding one would mean building a card treatment that doesn't exist there
+today, which is a bigger change than "add the same image treatment" asked
+for. The `/industries` page's mobile list already had cards, so it got the
+same treatment as its desktop version.
+
+**Verification performed:** `npx tsc --noEmit` and `npm run build` both
+clean. `npm run lint` shows the same pre-existing, unrelated
+`react-hooks/purity` false-positives as before — nothing new from these
+files. Screenshot-verified at 1600px (desktop, cycling through Real Estate,
+Industrial Manufacturing & Chemicals, and Automobile & EV on the homepage;
+Real Estate and Architecture & Interior on `/industries`) and 390px
+(mobile, scrolled through all 10 rows on `/industries`) — each card shows
+its own correctly matched image, fully readable text, and no visual
+collision between the two.
+

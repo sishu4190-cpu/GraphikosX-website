@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "framer-motion";
 import { Container } from "@/components/ui/Container";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -182,19 +183,42 @@ export function IndustriesTeaser() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -12 }}
                 transition={{ duration: shouldReduceMotion ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-2xl bg-surface p-8"
+                className="relative overflow-hidden rounded-2xl bg-surface p-8"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-grey-500">
-                  {String(active + 1).padStart(2, "0")} / 10
-                </p>
-                <h3 className="mt-3 font-display text-2xl font-bold">{activeIndustry.name}</h3>
-                <p className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-accent">Key Challenge</p>
-                <p className="mt-1 text-sm leading-relaxed text-grey-300">{activeIndustry.challenge}</p>
-                <p className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-accent">Strategic Opportunity</p>
-                <p className="mt-1 text-sm leading-relaxed text-grey-300">{activeIndustry.opportunity}</p>
-                <Link href={`/industries/${activeIndustry.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-paper hover:text-accent">
-                  Explore Industry <span aria-hidden>&rarr;</span>
-                </Link>
+                {/* Industry photo, muted and confined to the right side of the
+                    card via a left-to-right gradient: the left-to-right
+                    gradient keeps the text column (which starts flush left)
+                    sitting on a fully solid background, while the image only
+                    becomes visible — and even then at reduced opacity, never
+                    a flat photo — toward the card's right edge. This is how
+                    "image visible, text still fully readable, nothing
+                    overlaps" is achieved without splitting the card into
+                    separate image/text regions. */}
+                <div className="absolute inset-0" aria-hidden>
+                  <Image
+                    src={activeIndustry.image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 700px, 100vw"
+                    className="object-cover opacity-35"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-surface/25" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface/50 via-transparent to-transparent" />
+                </div>
+
+                <div className="relative">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-grey-500">
+                    {String(active + 1).padStart(2, "0")} / 10
+                  </p>
+                  <h3 className="mt-3 font-display text-2xl font-bold">{activeIndustry.name}</h3>
+                  <p className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-accent">Key Challenge</p>
+                  <p className="mt-1 text-sm leading-relaxed text-grey-300">{activeIndustry.challenge}</p>
+                  <p className="mt-4 text-sm font-semibold uppercase tracking-[0.1em] text-accent">Strategic Opportunity</p>
+                  <p className="mt-1 text-sm leading-relaxed text-grey-300">{activeIndustry.opportunity}</p>
+                  <Link href={`/industries/${activeIndustry.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-paper hover:text-accent">
+                    Explore Industry <span aria-hidden>&rarr;</span>
+                  </Link>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
