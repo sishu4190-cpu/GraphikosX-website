@@ -2195,3 +2195,487 @@ Real Estate and Architecture & Interior on `/industries`) and 390px
 its own correctly matched image, fully readable text, and no visual
 collision between the two.
 
+
+## Immersive 3D scroll redesign — Phase 2: persistent GX canvas + ScrollDirector (Hero only)
+
+First implementation step of the "GraphikosX Immersive 3D Scroll Redesign"
+master plan (Lusion-quality scroll interaction, GraphikosX's own visual
+language — Phase 1 was the repo audit + architecture plan presented and
+approved separately, no code changed there). Phase 2's own scope, per the
+plan: stand up the persistent-canvas architecture and migrate the Hero
+mark onto it, with the rest of the homepage untouched.
+
+**New `src/components/three/experience/` module** (replaces
+`GXHero.tsx`/`GXScene.tsx`/`GXSceneLite.tsx`, all three deleted — nothing
+else in the codebase imported them):
+
+- `GXExperience.tsx` — mounted once by `Hero.tsx` (previously `<GXHero>`
+  was mounted TWICE, once per responsive layout, each independently
+  deciding its own tier and mounting its own `<Canvas>`). Owns the
+  full/lite/static capability gate (same four signals as before:
+  prefers-reduced-motion, `deviceMemory`, WebGL support, small screen —
+  decided once instead of twice now), one shared pointer/touch
+  interaction state, and the new anchor-tracking rAF loop described below.
+- `GXCanvas.tsx` — the one persistent `<Canvas>`, spanning the whole Hero
+  section rather than a dedicated per-layout box. `frameloop` toggles
+  `"always"`/`"never"` based on whether Hero is anywhere near the
+  viewport (see ScrollDirector below) — the render loop now genuinely
+  pauses once Hero scrolls well out of view, which wasn't possible before
+  (the old canvases were unmounted, not merely paused, the moment Hero's
+  own box scrolled away — there was nothing to "pause").
+- `ScrollDirector.tsx` — exports `useSectionVisibility(sectionId)`, a
+  small hook synced to the sitewide Lenis instance via
+  `useLenis(() => ScrollTrigger.update())` (the same established
+  convention `ScrollScrubTimeline.tsx`/`BuyerJourneyScrub.tsx` already
+  use — no new global scroll-sync mechanism). For Phase 2 it only reports
+  whether Hero is in/near view (gates the canvas's frameloop); later
+  phases extend it with the actual scroll-driven chapter choreography for
+  the sections the master plan calls out next.
+- `SceneLighting.tsx` — the six-light rig, extracted once so every future
+  scene reuses it instead of re-declaring it per scene.
+- `scenes/HeroScene.tsx` / `scenes/HeroSceneLite.tsx` — the full/lite mark
+  scenes, ported from the old `GXScene.tsx`/`GXSceneLite.tsx` (identical
+  geometry, materials, lighting, atmosphere/particle layers, shadow/
+  reflection billboards, touch-drag interaction) with one real change:
+  anchor tracking (next section).
+
+**Why "anchor tracking" exists:** Hero.tsx still lays out two responsive
+slots exactly as before (a right-half box at `lg:` and up, a full-width
+strip below the text under `lg:`) — but they're now empty marker divs
+(`#gx-hero-anchor-desktop` / `#gx-hero-anchor-mobile`), not each mounting
+their own canvas. Since GXCanvas is one shared canvas spanning the whole
+Hero section, HeroScene/HeroSceneLite have to know, every frame, where on
+screen the currently-active anchor sits and reproduce the exact scale and
+position a dedicated canvas sized to just that box would have produced.
+`GXExperience.tsx` runs a small rAF loop that finds whichever anchor is
+currently laid out (exactly one is, via the same Tailwind
+`hidden lg:block`/`lg:hidden` split as before) and derives, from its pixel
+rect: (1) a normalized on-screen offset, used to reposition the whole
+scene root; (2) a scale correction, which needed two factors, not one — a
+camera-fov-based recovery of "what the mark's scale would have been inside
+a canvas sized to just the anchor box," further corrected by the ratio of
+the anchor's own pixel height to the shared canvas's pixel height (this
+second factor is what actually matters on mobile, where the shared canvas
+is far taller in pixels than the 390×288 anchor strip alone — omitting it
+was caught in verification as a real bug: the mark rendered enormous,
+covering most of the mobile viewport, before this correction was added).
+The same rAF loop also repositions the DOM hit-region (mouse-tilt/
+touch-drag target, `data-gx-cursor="drag"`) and the touch-glow trail to
+sit exactly over the active anchor, so both keep behaving identically to
+before.
+
+**Verification performed:** `npx tsc --noEmit` and `npm run build` both
+clean. `npm run lint`: 18 errors / 2 warnings, identical count to the
+pre-existing baseline (same `react-hooks/purity`/`react-hooks/immutability`
+false positives against react-three-fiber's imperative patterns, now
+naturally located in the new `HeroScene.tsx`/`HeroSceneLite.tsx` instead of
+the deleted `GXScene.tsx`/`GXSceneLite.tsx` — nothing new). Verified with a
+real Chromium instance (not just static analysis): zero console errors at
+1600px/900px/390px; the desktop-vs-mobile scale bug above was caught this
+way, fixed, and re-verified with fresh screenshots at all three widths
+showing the mark correctly sized and centered in its box. Confirmed via a
+temporary debug attribute (removed before delivery) that the canvas's
+`active` state — and therefore its render loop — correctly flips to
+`false` after scrolling 60% down the page and back to `true` on returning
+to Hero. Confirmed mouse-tilt (desktop) and touch-drag (mobile, via
+synthetic pointer events) both still visibly rotate the mark and that the
+custom cursor's "Orbit" pill still tracks the hit-region correctly.
+Confirmed `prefers-reduced-motion` still renders the static SVG fallback
+with zero `<canvas>` elements mounted. Scrolled well past Hero on both
+mobile and desktop and confirmed no visual bleed into `CustomerJourney`/
+`DigitalPresenceProblem` below — the shared canvas stays confined to
+Hero's own section bounds in this phase, exactly as scoped.
+
+**Deliberately out of scope for this phase** (per the master plan's own
+phased breakdown): the canvas does not yet extend visually behind any
+section other than Hero, and no other section has a scene yet — that
+starts in Phase 3 (Customer Journey → Problem → Ecosystem transitions),
+which is also where the page-wide z-index handling a truly cross-section
+canvas needs will first become load-bearing.
+
+## Immersive 3D scroll redesign — Phase 3: Customer Journey → Problem → Ecosystem chapters
+
+Second implementation step of the master plan. Scope, per the user's own
+answers to the two open questions from the Phase 1 plan: extend the
+persistent canvas behind three more sections — CustomerJourney ("Journey"),
+DigitalPresenceProblem ("Problem"), and Ecosystem — fading/pausing the
+canvas through the sections in between rather than keeping it on
+continuously, with full creative latitude on what the three new scenes
+actually look like (a first pass for the user to react to, not something
+described in words and pre-approved).
+
+**Chapters are not adjacent on the page.** The homepage order is Hero,
+CustomerJourney, CostOfWaiting, DigitalPresenceProblem, six more sections
+(MeetGraphikosX, Vision, Mission, Philosophy, IndustriesTeaser,
+BuildGrowScale, BusinessOutcomes), then Ecosystem. So there are two real
+gaps: CostOfWaiting (between Journey and Problem) and the run of six
+sections (between Problem and Ecosystem). Hero and Journey, by contrast,
+sit directly back to back with no gap at all.
+
+**`types.ts`** — new `ChapterId` union (`gx-hero-section` /
+`gx-journey-section` / `gx-problem-section` / `gx-ecosystem-section`) and
+`CHAPTER_IDS` constant, replacing the implicit "just Hero" assumption from
+Phase 2.
+
+**`ScrollDirector.tsx`** — new `useChapterVisibility(chapterIds)` hook,
+returning `activeChapter: ChapterId | null` (`null` during a gap).
+Deliberately does NOT reuse Phase 2's `useSectionVisibility` margins
+(`top bottom+=20%` / `bottom top-=20%`): those margins are generous enough
+that, on a normal-height viewport, they're wider than CostOfWaiting is
+tall, so Journey's and Problem's active windows overlapped THROUGH the
+entire gap and the canvas never actually went dark — caught in
+verification by scrubbing through the gap with a temporary debug
+attribute and finding the canvas still at full opacity the whole way
+across. Fixed by using `top center` / `bottom center` instead — active
+exactly while the viewport's own vertical midpoint sits inside that
+section. Since sections stack with no overlap, the viewport's midpoint is
+always inside exactly one of them, so at most one chapter is ever active
+and every gap, however short, reliably produces a real `null` stretch.
+`useSectionVisibility` itself is untouched and still exported, unused for
+now but kept as a plain single-section utility.
+
+**Canvas stays mounted from `Hero.tsx`, not moved to a page-level mount.**
+The instinct going in was to move `<GXExperience/>`'s JSX to `page.tsx`
+since it now needs to cover far more than Hero's own box — but a
+`position: fixed` element establishes its stacking context at the point
+it sits in the *document*, not wherever it happens to be visually
+anchored. Left inside Hero.tsx (exactly where Phase 2 mounted it, as
+Hero's last child) and just switched from `absolute inset-0` to `fixed
+inset-0`, it keeps painting on top of Hero's own background/content
+(nothing needed to change there) while painting behind every section
+that comes after Hero in the document — CustomerJourney, CostOfWaiting,
+DigitalPresenceProblem, ..., Ecosystem — since they're later siblings, all
+with no explicit z-index required anywhere. Moving the mount to page.tsx
+would have put it *before* Hero in document order and dimmed the already-
+shipped Hero mark behind Hero's own background — this was reasoned through
+rather than shipped and caught after the fact.
+
+**Each of the three new chapters' own section background is now
+`/90` instead of fully opaque** (`CustomerJourney`: `bg-grey-100` →
+`bg-grey-100/90`; `DigitalPresenceProblem`: `bg-paper` → `bg-paper/90`;
+`Ecosystem`: `bg-ink` → `bg-ink/90`), each also gaining its chapter `id`.
+An opaque background fully hides whatever's painted behind it regardless
+of z-index/paint order, so without this the canvas would sit correctly
+"behind" these sections in the stacking sense and still be completely
+invisible. 90% keeps every section's own text/cards at essentially
+unchanged contrast (confirmed via screenshots) while letting the new
+scenes read faintly through the gaps between content. Hero's own
+background is untouched (see above — it never needed this). The gap
+sections (CostOfWaiting and the six between Problem and Ecosystem) are
+untouched too, since the canvas is paused/invisible there regardless.
+
+**Three new ambient backdrop scenes** under
+`components/three/experience/scenes/`, all reusing the existing shared
+`SceneLighting` rig and none anchor-tracked to any DOM element (unlike
+Hero's mark) — they're full-viewport backdrops that scale gently with
+`viewport.width` since they have no anchor box to size themselves against:
+
+- `JourneyScene.tsx` — a single curved thread (`CatmullRomCurve3` →
+  `TubeGeometry`) strung through five waypoints echoing the Search →
+  Check → Compare → Trust → Decide steps, with a bright white pulse
+  travelling the curve end-to-end plus a sparse static particle field.
+  Deliberately no per-frame shimmer shader on the particles (unlike
+  Hero's own particle field) — a plain `PointsMaterial` needs nothing
+  mutated every frame, avoiding a third instance of the
+  `react-hooks/immutability` lint tradeoff HeroScene/HeroSceneLite already
+  carry for their own shimmer uniforms; not worth it for this much more
+  peripheral sprinkle of background dust. First version used a pale grey
+  path color (`#c4c8d2`) that turned out, once actually screenshotted
+  against CustomerJourney's own light background at 90% opacity, to be
+  essentially invisible — caught in verification, fixed by switching the
+  path/nodes to the brand's own electric-blue accent (`#1D4ED8`), which
+  reads clearly on both light and dark sections.
+- `ProblemScene.tsx` — a loose field of dark, angular shard meshes (an
+  irregular extruded quad, not a plain square, so each instance reads as
+  a distinct fragment) with thin blue traced edges (`EdgesGeometry` +
+  `LineBasicMaterial`), each bobbing/rotating independently within a
+  bounded oscillation (never permanent drift, so it reads as a stable
+  ambient loop no matter how long a visitor lingers) — an ambient echo of
+  DigitalPresenceProblem's own 2D "fragmented" scatter-card motif.
+- `EcosystemScene.tsx` — eight small nodes in a 3D ring (alternating
+  z-depth so it reads as a genuine orbit, not a flat circle facing the
+  camera) around a brighter center hub, connected by thin dim spokes,
+  slowly rotating — a sparse depth-echo of Ecosystem's own 2D radial
+  hub-and-spoke diagram. Deliberately dim/sparse: the real interactive 2D
+  diagram (hover states, related-node highlighting) stays the only thing
+  anyone actually reads or hovers.
+
+**`GXCanvas.tsx`** — now takes `activeChapter` instead of Phase 2's plain
+`active` boolean, and selects among `HeroScene`/`HeroSceneLite` (full
+tier only for Hero's own interactive scene) or the three new ambient
+scenes based on it; renders nothing when `activeChapter` is `null`. The
+`EffectComposer`/Bloom/ChromaticAberration/Noise stack (full tier only)
+now wraps whichever scene is currently selected instead of being
+hardcoded to Hero, so Journey/Problem/Ecosystem's bright accents bloom
+the same way the hero mark's do.
+
+**Verification performed:** `npx tsc --noEmit` and `npm run build` both
+clean. `npm run lint`: 18 errors / 2 warnings, identical to the Phase 2
+baseline (the three new scene files added zero net new lint debt after
+the particle-shader and array-mutation fixes described above). Verified
+with a real Chromium instance: zero console errors scrolling the entire
+homepage at 1600×1000, 834×1112 (tablet), and 390×844 (mobile). Confirmed
+via a temporary debug attribute (removed before delivery) that
+`activeChapter` correctly reads `gx-hero-section` / `gx-journey-section` /
+`gx-problem-section` / `gx-ecosystem-section` at each chapter and `none`
+in both gaps, and independently confirmed the canvas's actual opacity
+(read from react-three-fiber's own wrapper element, not the inner
+`<canvas>`, which carries no inline opacity of its own — a real
+measurement mistake caught mid-verification before it was mistaken for a
+product bug) drops to 0 in both gaps and is 1 at all four chapters.
+Screenshotted every chapter and both gaps at all three breakpoints;
+confirmed the gap screenshots show completely ordinary, undisturbed 2D
+content with no stray 3D bleed-through. Re-confirmed Hero's own mark,
+mouse-tilt (desktop) and touch-drag (mobile) interaction, and the custom
+cursor's "Orbit" pill all still work exactly as in Phase 2 — the
+`fixed`-positioning change to `GXExperience`'s wrapper was the main
+regression risk to Phase 2's already-shipped, approved work, and it's
+unaffected. Confirmed `prefers-reduced-motion` still renders zero
+`<canvas>` elements anywhere on the page, including after scrolling past
+every chapter.
+
+**Deliberately out of scope for this phase:** Hero and Journey's
+back-to-back hand-off is an instant scene cut, not a cross-fade — there's
+no gap between them to fade through, and building one wasn't asked for.
+The three new scenes are not scroll-scrubbed to their section's own
+internal progress (no per-step choreography synced to which of the five
+Journey steps is highlighted, for instance) — each just runs its own
+self-contained ambient animation loop for the whole time its chapter is
+active. Industries (Phase 4), Build/Grow/Scale + final CTA (Phase 5), and
+mobile/accessibility/performance QA (Phase 6) remain queued per the
+master plan's own phased breakdown.
+
+## Immersive 3D scroll redesign — Phase 4: Industries chapter + honest performance profiling
+
+Third implementation step of the master plan. Scope, per the user's own
+answers to the two open questions for this phase: add the persistent
+canvas as a fourth chapter behind `IndustriesTeaser` ("Industries"), with
+the 3D backdrop kept purely ambient — not reacting to which industry node
+is hovered/active — and with "performance testing" for this phase meaning
+real frame-timing measurement, reported honestly rather than just a
+pass/fail smoke check.
+
+**`types.ts`** — `ChapterId` union and `CHAPTER_IDS` extended with
+`gx-industries-section`, inserted in true page order between
+`gx-problem-section` and `gx-ecosystem-section`. Doc comment rewritten to
+list the page's real chapter order and name every section inside each of
+the (now three) gaps.
+
+**`IndustriesTeaser.tsx`** — gained `id="gx-industries-section"` and
+`relative bg-ink/90` (was a fully opaque `bg-ink` with no `position` at
+all, unlike every other chapter section). Same reasoning as Phase 3's
+three background changes: an opaque section background hides whatever's
+painted behind it regardless of paint order, so this chapter's background
+needed to loosen exactly like Journey/Problem/Ecosystem's did. Nothing
+else in this file changed — the existing SVG orbit diagram, its one-time
+auto-play sequence, and the mobile/tablet accessible list view are all
+untouched.
+
+**`IndustriesScene.tsx`** (new) — deliberately the lightest of the four
+ambient scenes: a single sparse, slowly drifting field of small points (30
+full-tier / 18 lite-tier, one draw call, a plain static `PointsMaterial`,
+no custom shader, no lines/tubes/shards). Two reasons for going this
+light. First, `IndustriesTeaser.tsx` already runs its own real-time
+animation on top (the SVG orbit's pulsing connector line, the auto-play
+sequence stepping through all ten industry nodes, and a framer-motion card
+transition), so this is the one chapter where the frame budget is already
+under the most pressure before the 3D layer adds anything. Second,
+deliberately NOT another hub-and-spoke ring: IndustriesTeaser's own 2D
+diagram already IS a ten-node hub-and-spoke orbit, and EcosystemScene
+already provides that same motif in 3D elsewhere on the page — stacking a
+near-identical third ring here would read as repetitive rather than
+additive, so this scene visualizes breadth/reach across many industries
+instead of any one structural diagram.
+
+**`GXCanvas.tsx`** — added the `gx-industries-section` branch to the
+scene-selection chain, and — the one deliberate behavioral change in this
+phase beyond simply adding a scene — postprocessing (`EffectComposer`/
+Bloom/ChromaticAberration/Noise) is now explicitly skipped for this
+chapter specifically (`enablePostprocessing` is false whenever
+`activeChapter === "gx-industries-section"`, independent of the `mode ===
+"full"` check every other chapter still uses). This was a proactive
+mitigation for the same frame-budget pressure described above, decided
+before the performance profiling below — not a reaction to a measured
+problem on this chapter, which turned out to have the best frame timing
+of any chapter precisely because of this cut (see below).
+
+**Performance profiling — the significant finding from this phase.**
+Per the user's "profile and report honestly" answer, real frame timing
+(sampling `requestAnimationFrame` deltas over several seconds, computing
+avg/p50/p95 frame time and estimated FPS) was measured at every chapter,
+not just Industries. This sandbox's headless Chromium has no real GPU —
+confirmed via `WEBGL_debug_renderer_info`, which reports SwiftShader
+software rendering, not a hardware driver — so every number below is
+software-rendered and almost certainly not representative of a real
+visitor's device; a real GPU handles multi-pass Bloom on scenes this
+simple with ease, and this is very likely a software-rendering-specific
+issue. With that caveat stated plainly: Hero, Journey, Problem, and
+Ecosystem — all of which run the full `EffectComposer`/Bloom/
+ChromaticAberration/Noise stack unchanged since Phase 2/3 — measured
+roughly 1.4–2.3 estimated FPS in this sandbox, while Industries (the one
+chapter with postprocessing disabled) measured roughly 37.5–39.8 estimated
+FPS, confirmed not a scroll-settling artifact by re-measuring after a
+longer settle period. That's better than an order-of-magnitude difference
+directly attributable to the postprocessing stack, and it had never been
+frame-timing-profiled in Phases 2 or 3 — this phase was the first time
+anyone actually measured it rather than just checking for console errors
+and correct visual output. No code in Hero/Journey/Problem/Ecosystem was
+touched to address this: those phases are already shipped and approved,
+Phase 4's scope is Industries only, and whether to lighten the
+postprocessing stack sitewide is the user's call, not something to fix
+unilaterally on the side of an unrelated phase. Surfaced here for exactly
+that decision.
+
+**Verification performed:** `npx tsc --noEmit`, `npm run lint` (18 errors
+/ 2 warnings, identical to the established baseline — no new lint debt
+from `IndustriesScene.tsx`), and `npx next build` all clean. Verified with
+a real Chromium instance: zero console/page errors scrolling the entire
+homepage at 1600×1000, 834×1112 (tablet), and 390×844 (mobile, with
+touch). Confirmed via a temporary debug attribute (removed before
+delivery, confirmed absent afterward) and independently via the canvas's
+actual computed opacity (read from its react-three-fiber wrapper element,
+per the measurement approach fixed in Phase 3) that `activeChapter` and
+the canvas's visible/hidden state are both correct at all five chapters
+and in both gaps adjacent to Industries (Problem → Industries; Industries
+→ Ecosystem) — opacity reads `1` at every chapter, `0` in both gaps,
+matching Phase 2/3's already-verified behavior with no regression.
+Screenshotted the Industries chapter and both of its adjacent gaps at all
+three breakpoints; confirmed the orbit diagram, its auto-play sequence,
+and the mobile/tablet accessible list view all render correctly and
+unchanged, and that the ambient 3D backdrop is appropriately subtle
+against the section's dark background rather than competing with the 2D
+diagram. Confirmed the gap screenshots (the Vision/Mission/Philosophy
+content between Problem and Industries) show completely ordinary 2D
+content with no stray 3D bleed-through.
+
+**Deliberately out of scope for this phase:** the Industries 3D backdrop
+does not react to which industry node is active or hovered — it stays a
+pure ambient loop, per the user's own "ambient only" answer. The
+Bloom/postprocessing performance finding above is reported, not fixed, in
+any of the already-shipped Hero/Journey/Problem/Ecosystem chapters. Build/
+Grow/Scale + the final CTA (Phase 5) and mobile/accessibility/performance
+QA (Phase 6) remain queued per the master plan's own phased breakdown.
+
+## Immersive 3D scroll redesign — Phase 5: Build/Grow/Scale + final CTA chapters
+
+Fourth implementation step of the master plan, and the last one adding new
+chapters — Phase 6 is mobile/accessibility/performance QA across
+everything above, not another chapter. Scope: add the persistent canvas
+behind two more sections — `BuildGrowScale` ("Build. Grow. Scale.") and
+`FreeAuditCTA`, the homepage's closing CTA — matching the master plan's own
+"Build/Grow/Scale + final CTA" phase item. Full creative latitude again, no
+new open questions this time: the ambient-only, ship-a-first-pass approach
+already established across Phases 3 and 4 carries over directly, since
+neither new section has anything resembling IndustriesTeaser's own
+interactive state to weigh an "ambient vs. synced" choice against.
+
+**Chapters now span the whole homepage, in true document order:** Hero,
+Journey, Problem, Industries, BuildGrowScale, Ecosystem, FinalCTA.
+Industries and BuildGrowScale sit directly back to back with no gap
+(`IndustriesTeaser` is immediately followed by `BuildGrowScale` in the
+DOM) — the second such adjacency after Hero/Journey. Every other pair has
+a real gap: BusinessOutcomes between BuildGrowScale and Ecosystem;
+HowWeWork, WhyGraphikosX, and FounderSection between Ecosystem and
+FinalCTA.
+
+**`types.ts`** — `ChapterId`/`CHAPTER_IDS` extended with
+`gx-buildgrowscale-section` and `gx-finalcta-section`, inserted in their
+true document positions (BuildGrowScale between Industries and Ecosystem;
+FinalCTA last). Doc comment rewritten to describe the full seven-chapter
+page order and every gap between them.
+
+**`BuildGrowScale.tsx`** and **`FreeAuditCTA.tsx`** — each gained its
+chapter `id` and a `/90` background (`bg-paper` → `bg-paper/90`; `bg-ink`
+→ `bg-ink/90`), the same opacity loosening every other chapter section has
+needed. Both sections were already `relative`, so unlike Phase 4's
+`IndustriesTeaser.tsx` there was no positioning gap to close. Nothing else
+in either file changed — `BuildGrowScale`'s three service-group cards and
+`FreeAuditCTA`'s buttons/copy are untouched.
+
+**Two new ambient scenes:**
+
+- `BuildGrowScaleScene.tsx` — three translucent step blocks of increasing
+  height, arranged as a literal rising staircase with a thin electric-blue
+  connector running along the ascent. A direct visual echo of the
+  section's own "Build → Grow → Scale" progression (and of that section's
+  2D UI: three stacked cards linked by a short connector between each
+  pair) — no scene so far had used an "ascending steps" motif. Reuses
+  ProblemScene's face+edges material pattern (translucent dark fill plus a
+  traced electric-blue outline) on box geometry instead of irregular
+  shards. The step count is fixed at three (a literal match to Build/Grow/
+  Scale, not a density knob), which also makes this the cheapest of the
+  six scenes regardless of tier — the `lite` prop only trims material
+  opacity, since there's no meaningful count/segment reduction left to
+  make on three boxes.
+- `FinalCTAScene.tsx` — the sparsest, dimmest, slowest-moving scene of all
+  six: a small static point field (14 full-tier / 8 lite-tier) with only a
+  quiet bounded vertical "breathing" drift, no per-item motion. Deliberately
+  the most restrained treatment on the page, for two reasons: this section
+  already carries its own CSS aurora glow (`gx-bg-dark-aurora`), so a
+  second, louder 3D effect would compete with it rather than complement
+  it; and, more importantly, this is the homepage's closing conversion
+  CTA — the headline and the "Get Your Free Audit" / WhatsApp buttons need
+  to stay the unambiguous focal point, never a finale showpiece competing
+  for attention. (This was a live design fork worth noting: "final CTA"
+  could reasonably have meant a more dramatic closing moment instead —
+  restraint was chosen deliberately, on conversion-safety grounds, and is
+  easy to dial up later if it reads as too quiet.)
+
+**`GXCanvas.tsx`** — added both new scene branches to the selection chain,
+in document order. Postprocessing (Bloom/ChromaticAberration/Noise) stays
+**on** for both new chapters, unlike Industries — neither `BuildGrowScale`
+nor `FreeAuditCTA` runs any continuous competing animation (both sections'
+only motion is one-shot `whileInView` reveals that finish and stop, unlike
+IndustriesTeaser's looping auto-play sequence), and both new scenes are
+already the cheapest of the six scenes with real geometry. The Phase 4
+postprocessing cut was a response to that one section's specific frame
+pressure, not a blanket policy, so it wasn't applied here by default.
+
+**Performance profiling, continued honestly:** per the standard set in
+Phase 4, both new chapters were frame-timed the same way, not just
+smoke-tested. With postprocessing on (as shipped), BuildGrowScale measured
+~1.3 estimated FPS and FinalCTA ~1.6 estimated FPS in this sandbox — in
+the same range as Hero/Journey/Problem/Ecosystem's own already-reported
+~1.4–2.3 FPS, and consistent with the Phase 4 finding that the Bloom stack
+is the dominant cost under this sandbox's GPU-less (SwiftShader) software
+rendering, not any particular scene's own content. Nothing new here beyond
+confirming the existing finding extends to these two chapters as
+expected — no code changed in response, for the same reasons given in
+Phase 4 (not representative of real hardware; whether to lighten the
+Bloom stack sitewide remains the user's open call, not Claude's to make
+unilaterally).
+
+**Verification performed:** `npx tsc --noEmit`, `npm run lint` (18 errors
+/ 2 warnings, unchanged baseline — no new lint debt from either new scene
+file), and `npx next build` all clean. Real Chromium instance: zero
+console/page errors scrolling the entire homepage at 1600×1000, 834×1112
+(tablet), and 390×844 (mobile, with touch). Confirmed via a temporary
+debug attribute (removed before delivery, confirmed absent afterward) and
+independently via the canvas's own computed opacity that all seven
+chapters read correctly and both new gaps (BuildGrowScale→Ecosystem via
+BusinessOutcomes; Ecosystem→FinalCTA via HowWeWork/WhyGraphikosX/
+FounderSection) correctly fade to 0 once fully settled past the 700ms
+opacity transition — an initial mid-transition read of ~0.2 during the
+BuildGrowScale→Ecosystem gap was caught, re-checked after a longer settle,
+and confirmed to reach 0, not a product bug. Also confirmed the
+Industries→BuildGrowScale back-to-back handoff switches chapters cleanly
+with no gap, matching Hero/Journey's already-established back-to-back
+behavior. Screenshotted both new chapters and both new gaps at all three
+breakpoints; confirmed BuildGrowScale's three service cards and
+FreeAuditCTA's headline/buttons/copy all render correctly and unchanged,
+the new ambient backdrops are appropriately subtle against their
+sections' backgrounds, and the gap screenshots (BusinessOutcomes;
+WhyGraphikosX) show completely ordinary 2D content with no stray 3D
+bleed-through. Confirmed `prefers-reduced-motion` still renders zero
+`<canvas>` elements anywhere on the page after scrolling through both new
+chapters.
+
+**Deliberately out of scope for this phase:** neither new scene reacts to
+scroll position within its own section or to any hover/focus state — both
+are self-contained ambient loops for the whole time their chapter is
+active, consistent with every ambient scene so far. The Bloom/
+postprocessing performance question remains open for the user to decide,
+not acted on here. Phase 6 (mobile/accessibility/performance QA across the
+full seven-chapter experience) remains queued and is the master plan's
+final phase.
+

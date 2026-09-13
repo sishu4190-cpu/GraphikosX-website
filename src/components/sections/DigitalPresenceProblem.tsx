@@ -58,7 +58,10 @@ export function DigitalPresenceProblem() {
   }, [connecting, shouldReduceMotion]);
 
   return (
-    <section className="relative overflow-hidden bg-paper py-24 md:py-32">
+    // Phase 3: id + bg-paper/90 — see CustomerJourney.tsx's identical note;
+    // this is one of the persistent 3D experience's four chapters, so its
+    // background can't stay fully opaque or it hides ProblemScene behind it.
+    <section id="gx-problem-section" className="relative overflow-hidden bg-paper/90 py-24 md:py-32">
       <div aria-hidden className="gx-bg-light-haze" />
       <CursorAtmosphere tone="light" />
       <Container className="relative z-10">

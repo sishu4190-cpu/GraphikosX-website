@@ -33,7 +33,10 @@ export function Ecosystem() {
   const relatedSet = new Set(hovered ? nodes.find((n) => n.key === hovered)?.related ?? [] : []);
 
   return (
-    <section className="relative overflow-hidden bg-ink py-24 text-paper md:py-32">
+    // Phase 3: id + bg-ink/90 — see CustomerJourney.tsx's identical note;
+    // this is one of the persistent 3D experience's four chapters, so its
+    // background can't stay fully opaque or it hides EcosystemScene behind it.
+    <section id="gx-ecosystem-section" className="relative overflow-hidden bg-ink/90 py-24 text-paper md:py-32">
       <div aria-hidden className="gx-bg-dark-aurora" />
       <CursorAtmosphere tone="dark" />
       <Container className="relative z-10">

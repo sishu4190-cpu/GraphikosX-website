@@ -82,7 +82,15 @@ export function IndustriesTeaser() {
   };
 
   return (
-    <section className="bg-ink py-24 text-paper md:py-32">
+    // Phase 4: id + relative + bg-ink/90 (was fully opaque bg-ink) — this is
+    // one of the persistent 3D experience's chapters (see GXExperience.tsx /
+    // types.ts's CHAPTER_IDS), so its background can't stay fully opaque or
+    // it hides IndustriesScene behind it. `relative` added for consistency
+    // with every other chapter section (not load-bearing for the canvas's
+    // own paint order — see GXExperience.tsx's Phase 3 note on how that
+    // actually works — but this section didn't have any position at all
+    // before, unlike the others).
+    <section id="gx-industries-section" className="relative bg-ink/90 py-24 text-paper md:py-32">
       <Container>
         <SectionHeader
           animate

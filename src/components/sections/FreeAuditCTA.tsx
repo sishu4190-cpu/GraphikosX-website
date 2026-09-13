@@ -10,7 +10,16 @@ import { CursorAtmosphere } from "@/components/motion/CursorAtmosphere";
 
 export function FreeAuditCTA({ source = "homepage-cta" }: { source?: string }) {
   return (
-    <section className="relative overflow-hidden bg-ink py-24 text-paper md:py-32">
+    // Phase 5: id + bg-ink/90 (was fully opaque bg-ink) — this is the
+    // final chapter of the persistent 3D experience (see
+    // GXExperience.tsx / types.ts's CHAPTER_IDS). Already `relative`, so
+    // no positioning change needed, only the same opacity loosening every
+    // other chapter section has needed. The existing `gx-bg-dark-aurora`
+    // CSS glow is untouched — the new 3D layer is deliberately sparse (see
+    // FinalCTAScene.tsx) so the two read as complementary, not
+    // duplicated, and neither ever competes with the CTA buttons/text for
+    // attention.
+    <section id="gx-finalcta-section" className="relative overflow-hidden bg-ink/90 py-24 text-paper md:py-32">
       <CursorAtmosphere tone="dark" />
       <div aria-hidden className="gx-bg-dark-aurora" />
       <Container className="relative z-10 text-center">

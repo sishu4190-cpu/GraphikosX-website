@@ -1,23 +1,30 @@
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { freeAuditHref } from "@/lib/freeAuditUrl";
-import { GXHero } from "@/components/three/GXHero";
+import { GXExperience } from "@/components/three/experience/GXExperience";
 import { EyebrowReveal, HeadlineReveal, DescriptionReveal, CTAReveal } from "@/components/motion/AnimatedText";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-paper pt-16 pb-24 md:pt-24 md:pb-32">
-      {/* Side-by-side 3D logo starts at lg (1024px), not md (768px): below
+    <section id="gx-hero-section" className="relative overflow-hidden bg-paper pt-16 pb-24 md:pt-24 md:pb-32">
+      {/* <GXExperience> (mounted once, below) is the single persistent 3D
+          canvas for the whole hero — it positions itself over whichever of
+          these two anchor divs is currently laid out, rather than each
+          layout mounting its own canvas the way GXHero.tsx used to. See
+          GXExperience.tsx's header comment for the full reasoning.
+
+          Side-by-side 3D logo starts at lg (1024px), not md (768px): below
           lg the text column and this decorative half visually collide (the
           text column can run past the 50% mark on tablet widths). Below lg
           the mark instead renders full-width beneath the text (further
           down this file), where there's nothing to overlap.
-          pointer-events-none on this whole decorative half — GXScene opens
-          its own small, precisely-scoped pointer-events:auto hit area
-          centered on the mark itself (see GXScene.tsx), so the mouse-control
-          interaction never risks capturing clicks meant for the CTA buttons. */}
+          pointer-events-none on this whole decorative half — GXExperience
+          opens its own small, precisely-scoped pointer-events:auto hit area
+          centered on the mark itself, so the mouse-control interaction
+          never risks capturing clicks meant for the CTA buttons. */}
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block">
-        <GXHero layout="lg-up" />
+        <div aria-hidden className="gx-hero-glow" />
+        <div id="gx-hero-anchor-desktop" className="absolute inset-0" />
       </div>
 
       <Container>
@@ -57,8 +64,12 @@ export function Hero() {
       </Container>
 
       <div className="relative mt-16 h-72 w-full lg:hidden">
-        <GXHero layout="below-lg" />
+        <div aria-hidden className="gx-hero-glow" />
+        <div id="gx-hero-anchor-mobile" className="absolute inset-0" />
       </div>
+
+      {/* Mounted once — see the comment above the desktop anchor div. */}
+      <GXExperience />
     </section>
   );
 }

@@ -13,7 +13,13 @@ export function BuildGrowScale() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden bg-paper py-24 md:py-32">
+    // Phase 5: id + bg-paper/90 (was fully opaque bg-paper) — this is now
+    // one of the persistent 3D experience's chapters (see
+    // GXExperience.tsx / types.ts's CHAPTER_IDS). Already `relative`, so
+    // no positioning change needed, only the opacity loosening every
+    // other chapter section has needed (an opaque background hides
+    // whatever's painted behind it regardless of z-index/paint order).
+    <section id="gx-buildgrowscale-section" className="relative overflow-hidden bg-paper/90 py-24 md:py-32">
       <div aria-hidden className="gx-bg-diagram-grid" />
       <CursorAtmosphere tone="light" />
       <Container className="relative z-10">

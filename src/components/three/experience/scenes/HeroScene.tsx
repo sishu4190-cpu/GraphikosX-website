@@ -1,53 +1,33 @@
 "use client";
 
 // ---------------------------------------------------------------------------
-// GXSceneLite — the phone tier of GXHero.tsx's capability gate. Same traced
-// GX mark, same materials, same lighting, same touch-drag interaction as
-// GXScene.tsx (the desktop/tablet "full" scene), but with the two most
-// GPU-expensive subsystems dropped entirely rather than just turned down:
+// HeroScene — the "full" (desktop/tablet) tier of the persistent GX
+// experience canvas. Ported from the pre-Phase-2 GXScene.tsx's <GXForm>
+// almost verbatim (identical geometry/materials/lighting-adjacent helpers,
+// identical atmosphere+particle layer, identical shadow/reflection
+// billboards) — see that file's git history for the full provenance of the
+// traced mark geometry and every technique below. Duplicated rather than
+// shared with HeroSceneLite.tsx, matching this project's existing
+// full/lite-scene convention (see GXSceneLite.tsx's own header comment).
 //
-//   - No full-screen domain-warped fbm() "atmosphere" plane. That's a
-//     24x16-unit plane running ~12 noise evaluations per pixel every frame
-//     across a large screen area — by far the single most expensive part of
-//     GXScene.tsx, and a large per-pixel fragment-shader cost is exactly
-//     what a phone GPU (typically bandwidth/fillrate-bound, not
-//     compute-bound the way a discrete desktop GPU is) pays for most
-//     directly.
-//   - No EffectComposer postprocessing stack (Bloom/ChromaticAberration/
-//     Noise). Each is a full-framebuffer pass; sequential full-screen
-//     passes compound worse on a mobile GPU's shared, lower memory
-//     bandwidth than the same passes do on desktop.
-//   - `dpr` capped lower ([1, 1.2] vs. the full scene's [1, 1.6]) and the
-//     particle count roughly halved (90 vs. 180) as two smaller, cheap
-//     extra-margin cuts on top of the two big ones above.
-//
-// This file duplicates GXScene.tsx's geometry/material/lighting code rather
-// than sharing it via a prop-driven "lite" flag on that file — consistent
-// with this project's own stated convention of touching only what a given
-// phase actually needs, and avoiding a single file that has to branch its
-// way through two very different perf budgets (see the WebGL-capability
-// check comment in WorkScene.tsx for the prior instance of this same
-// convention). The one piece that IS shared, deliberately, is the touch
-// interaction logic (useHeroTouchControl.ts) — that's the part where a
-// second hand-copied implementation would risk the two drifting into
-// actually-different (and buggier) drag behavior, not just a different
-// look.
+// The one genuinely new piece is anchor tracking: GXCanvas.tsx now mounts
+// ONE shared <Canvas> spanning the whole Hero section instead of a
+// dedicated per-layout box, so this scene has to know where on screen the
+// mark should actually appear (wherever Hero.tsx's currently-visible anchor
+// div — #gx-hero-anchor-desktop or #gx-hero-anchor-mobile — currently sits)
+// and reproduce the exact scale/position the old dedicated-box canvas would
+// have produced. See `anchorStateRef`'s own type doc (types.ts) and the
+// scaleFactorValue/offset derivation inside useFrame below for the math.
 // ---------------------------------------------------------------------------
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
-import type { PointerEvent as ReactPointerEvent } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import { GXTouchGlow } from "@/components/three/GXTouchGlow";
-import { useHeroTouchControl, type HeroTouchTarget } from "@/components/three/useHeroTouchControl";
+import type { HeroTouchTarget } from "@/components/three/useHeroTouchControl";
+import type { AnchorState, PointerTarget } from "@/components/three/experience/types";
 
 type Point = [number, number];
 
-// Identical traced source data to GXScene.tsx — see that file's own header
-// comment for the full provenance (OpenCV contour extraction from the
-// official GX logo PNG). Duplicated here rather than imported so this file
-// has zero dependency on GXScene.tsx and can be code-split/loaded fully
-// independently of it.
 const RING_OUTLINE: Point[] = [
   [-0.1806, 1.2556], [-0.6306, 1.2833], [-1.0417, 1.1444], [-1.4083, 0.8278],
   [-1.625, 0.3944], [-1.6639, -0.0778], [-1.5417, -0.4833], [-1.2528, -0.8611],
@@ -77,8 +57,8 @@ function shapeFromOutline(points: Point[]) {
   return shape;
 }
 
-// Same fitted-circular-arc ring geometry as GXScene.tsx — see that file's
-// RING_ARC comment for the derivation.
+// Same fitted-circular-arc ring geometry as the original GXScene.tsx — see
+// that file's RING_ARC comment for the full derivation.
 const RING_ARC = {
   cx: -0.48484,
   cy: 0.06517,
@@ -122,12 +102,6 @@ const ALL_OUTLINE_POINTS = [...RING_OUTLINE, ...BLADE_A_OUTLINE, ...BLADE_B_OUTL
 const SHAPE_MIN_Y = Math.min(...ALL_OUTLINE_POINTS.map((p) => p[1]));
 const SHAPE_HALF_WIDTH = Math.max(...ALL_OUTLINE_POINTS.map((p) => Math.abs(p[0])));
 
-interface PointerTarget {
-  x: number;
-  y: number;
-  active: boolean;
-}
-
 function useShadowTexture() {
   return useMemo(() => {
     const size = 256;
@@ -147,19 +121,6 @@ function useShadowTexture() {
   }, []);
 }
 
-/**
- * Soft, heavily-blurred radial-gradient canvas texture for the reflection
- * pool beneath the mark — same baked-gradient technique as the contact
- * shadow above (`useShadowTexture`), tinted with the brand's rim-light blue
- * instead of near-black, so it reads as the mark's own light pooling on a
- * surface rather than a second shadow.
- *
- * Identical to GXScene.tsx's `useReflectionPoolTexture()` — see that file's
- * comment for why this replaced a rotating mirrored-geometry mesh (it
- * foreshortened to near-nothing at most rotation angles, exactly like a
- * coin turned edge-on, and was never round to begin with since it was the
- * letter-shaped silhouette itself, mirrored).
- */
 function useReflectionPoolTexture() {
   return useMemo(() => {
     const size = 256;
@@ -179,12 +140,76 @@ function useReflectionPoolTexture() {
   }, []);
 }
 
-// Roughly half of GXScene.tsx's 180 — the particle field itself was already
-// identified as cheap (a 2-instruction vertex shader, a single-circle
-// fragment shader), so this is a small extra-margin cut, not one of the two
-// load-bearing ones (those are the dropped atmosphere plane and
-// postprocessing stack above).
-const PARTICLE_COUNT = 90;
+const NOISE_GLSL = `
+  float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
+  float valueNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    float a = hash(i);
+    float b = hash(i + vec2(1.0, 0.0));
+    float c = hash(i + vec2(0.0, 1.0));
+    float d = hash(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+  }
+  float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int i = 0; i < 4; i++) {
+      value += amplitude * valueNoise(p);
+      p *= 2.0;
+      amplitude *= 0.5;
+    }
+    return value;
+  }
+`;
+
+function useAtmosphereMaterial() {
+  return useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0 },
+          uColor: { value: new THREE.Color("#1D4ED8") },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          ${NOISE_GLSL}
+          uniform float uTime;
+          uniform vec3 uColor;
+          varying vec2 vUv;
+          void main() {
+            vec2 uv = vUv * 2.0 - 1.0;
+            vec2 p = uv * 1.6;
+            vec2 warp = vec2(
+              fbm(p + uTime * 0.035),
+              fbm(p + vec2(5.2, 1.3) - uTime * 0.028)
+            );
+            float n = fbm(p * 0.8 + warp * 0.9);
+            float radial = 1.0 - smoothstep(0.0, 1.15, length(uv));
+            float alpha = n * radial * 0.10;
+            gl_FragColor = vec4(uColor, alpha);
+          }
+        `,
+      }),
+    []
+  );
+}
+
+const PARTICLE_COUNT = 180;
 
 function useParticleGeometry() {
   return useMemo(() => {
@@ -245,27 +270,30 @@ function useParticleMaterial() {
   );
 }
 
-function GXFormLite({
+export function HeroScene({
   pointerRef,
   touchRef,
+  anchorStateRef,
 }: {
   pointerRef: React.MutableRefObject<PointerTarget>;
   touchRef: React.MutableRefObject<HeroTouchTarget>;
+  anchorStateRef: React.MutableRefObject<AnchorState>;
 }) {
+  const sceneRoot = useRef<THREE.Group>(null);
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const shadow = useRef<THREE.Mesh>(null);
   const reflection = useRef<THREE.Mesh>(null);
   const current = useRef({ x: 0, y: 0 });
   const idleAngle = useRef(0);
-  const { viewport } = useThree();
-  const scaleFactorValue = Math.min(viewport.width / 6.2, 1.05);
+  const { viewport, size } = useThree();
 
   const ringGeo = useTracedGeometry(RING_OUTLINE, 0.34, true);
   const bladeAGeo = useTracedGeometry(BLADE_A_OUTLINE, 0.3, false);
   const bladeBGeo = useTracedGeometry(BLADE_B_OUTLINE, 0.3, false);
   const shadowTexture = useShadowTexture();
   const reflectionTexture = useReflectionPoolTexture();
+  const atmosphereMaterial = useAtmosphereMaterial();
   const particleGeo = useParticleGeometry();
   const particleMaterial = useParticleMaterial();
 
@@ -282,12 +310,49 @@ function GXFormLite({
   );
 
   useFrame((state, delta) => {
+    atmosphereMaterial.uniforms.uTime.value = state.clock.elapsedTime;
     particleMaterial.uniforms.uTime.value = state.clock.elapsedTime;
 
-    if (!group.current || !inner.current) return;
+    if (!group.current || !inner.current || !sceneRoot.current) return;
 
-    // Same idle-rotation + touch-spin composition as GXScene.tsx's GXForm —
-    // see that file's identical comment for the reasoning.
+    // --- Anchor tracking (new in Phase 2) ---------------------------------
+    // Reposition/rescale the whole scene root every frame so it lands at
+    // wherever Hero.tsx's currently-visible anchor div sits on screen, and
+    // at the scale a dedicated canvas sized to just that box would have
+    // produced. See types.ts's AnchorState doc for the general reasoning.
+    //
+    // The scale math needs TWO corrections, not one:
+    //  1. `viewport.height` (world units at z=0) depends only on the
+    //     camera's fixed fov/distance, never on canvas pixel size — so
+    //     `viewport.height * anchorAspect` recovers what the OLD dedicated
+    //     canvas's own `viewport.width` would have been, from the anchor's
+    //     pixel aspect ratio alone.
+    //  2. That alone is NOT enough once the shared canvas's own pixel
+    //     dimensions differ a lot from the anchor's (true on mobile: the
+    //     anchor is a short, wide 390x288 strip but the shared canvas
+    //     spans the WHOLE — much taller — Hero section). Pixels-per-world-
+    //     unit is fixed by the shared canvas's own `size.height` (always
+    //     `size.height / viewport.height`), not by the anchor's height —
+    //     so reusing the anchor-derived scale unchanged made the mark
+    //     enormous on mobile, where the shared canvas is ~3.6x taller in
+    //     pixels than the anchor box alone. Multiplying by
+    //     `anchor.heightPx / size.height` corrects for that (it's exactly
+    //     1 on desktop, where the anchor already spans the full section
+    //     height, which is why desktop looked right without it).
+    const anchor = anchorStateRef.current;
+    let scaleFactorValue = 1;
+    if (anchor.visible && anchor.heightPx > 0 && size.height > 0) {
+      const anchorAspect = anchor.widthPx / anchor.heightPx;
+      const recoveredWorldWidth = viewport.height * anchorAspect;
+      const anchorScaleFactorValue = Math.min(recoveredWorldWidth / 6.2, 1.05);
+      const canvasToAnchorHeightRatio = anchor.heightPx / size.height;
+      scaleFactorValue = anchorScaleFactorValue * canvasToAnchorHeightRatio;
+      sceneRoot.current.position.x = anchor.nx * (viewport.width / 2);
+      sceneRoot.current.position.y = anchor.ny * (viewport.height / 2);
+    }
+    group.current.scale.setScalar(scaleFactorValue);
+
+    // --- Everything below is unchanged from the original GXForm ----------
     idleAngle.current += delta * 0.16;
     const touch = touchRef.current;
     inner.current.rotation.y = idleAngle.current + touch.spin;
@@ -305,28 +370,35 @@ function GXFormLite({
     group.current.position.x = current.current.y * 0.12;
     group.current.position.y = -current.current.x * 0.08;
 
+    // Ground shadow + reflection pool: scaleFactorValue is now computed
+    // fresh every frame (see anchor-tracking block above) rather than once
+    // per render, so — unlike the original GXForm, which could set these
+    // meshes' base position.y/scale.y once via a reactive JSX prop and only
+    // touch .position.x/.scale.x per frame — every component that depends
+    // on scaleFactorValue has to be written here each frame.
     if (shadow.current) {
+      shadow.current.position.y = (SHAPE_MIN_Y - 0.55) * scaleFactorValue;
+      shadow.current.scale.y = scaleFactorValue;
       shadow.current.position.x = current.current.y * 0.16 * scaleFactorValue;
       shadow.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.1);
     }
 
-    // Reflection pool: same "flat camera-facing billboard, nudged not
-    // rotated" treatment as the shadow just above, for the same reason —
-    // see useReflectionPoolTexture()'s comment for why this replaced a
-    // rotating mirrored-geometry mesh.
     if (reflection.current) {
+      reflection.current.position.y = (SHAPE_MIN_Y - 0.28) * scaleFactorValue;
+      reflection.current.scale.y = scaleFactorValue;
       reflection.current.position.x = current.current.y * 0.16 * scaleFactorValue;
       reflection.current.scale.x = scaleFactorValue * (1 + Math.abs(current.current.x) * 0.08);
     }
   });
 
   return (
-    <>
-      {/* No atmosphere plane here — see the file header for why this is the
-          single biggest cost cut for the phone tier. */}
+    <group ref={sceneRoot}>
+      <mesh position={[0, 0, -3]} material={atmosphereMaterial}>
+        <planeGeometry args={[24, 16]} />
+      </mesh>
       <points geometry={particleGeo} material={particleMaterial} />
 
-      <group ref={group} scale={scaleFactorValue}>
+      <group ref={group}>
         <group ref={inner} rotation={[0.1, 0.25, 0.02]}>
           <mesh geometry={ringGeo} material={material} castShadow receiveShadow />
           <mesh geometry={bladeAGeo} material={material} position={[0, 0, -0.02]} castShadow receiveShadow />
@@ -334,109 +406,21 @@ function GXFormLite({
         </group>
       </group>
 
+      {/* position.y/scale set imperatively in useFrame above (z stays fixed
+          here — it's never scaled by scaleFactorValue, same as before). */}
       {reflectionTexture && (
-        <mesh
-          ref={reflection}
-          position={[0, (SHAPE_MIN_Y - 0.28) * scaleFactorValue, -0.3]}
-          scale={[scaleFactorValue, scaleFactorValue, 1]}
-        >
+        <mesh ref={reflection} position={[0, 0, -0.3]}>
           <planeGeometry args={[SHAPE_HALF_WIDTH * 2.1, SHAPE_HALF_WIDTH * 0.85]} />
           <meshBasicMaterial map={reflectionTexture} transparent opacity={0.6} depthWrite={false} />
         </mesh>
       )}
 
       {shadowTexture && (
-        <mesh
-          ref={shadow}
-          position={[0, (SHAPE_MIN_Y - 0.55) * scaleFactorValue, -0.4]}
-          scale={[scaleFactorValue, scaleFactorValue, 1]}
-        >
+        <mesh ref={shadow} position={[0, 0, -0.4]}>
           <planeGeometry args={[SHAPE_HALF_WIDTH * 2.3, SHAPE_HALF_WIDTH * 1.05]} />
           <meshBasicMaterial map={shadowTexture} transparent opacity={0.55} depthWrite={false} />
         </mesh>
       )}
-    </>
-  );
-}
-
-export default function GXSceneLite() {
-  const [ready, setReady] = useState(false);
-  const pointer = useRef<PointerTarget>({ x: 0, y: 0, active: false });
-  const isFinePointer = useRef(false);
-  const { target: touchTarget, handlers: touchHandlers } = useHeroTouchControl();
-
-  const resolvePointerCapability = () => {
-    if (typeof window !== "undefined" && window.matchMedia) {
-      isFinePointer.current = window.matchMedia("(pointer: fine)").matches;
-    }
-  };
-
-  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== "mouse") return;
-    resolvePointerCapability();
-    if (!isFinePointer.current) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    pointer.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.current.y = ((event.clientY - rect.top) / rect.height) * 2 - 1;
-    pointer.current.active = true;
-  };
-
-  const handlePointerLeave = () => {
-    pointer.current.active = false;
-  };
-
-  return (
-    <div className="absolute inset-0">
-      <Canvas
-        className="!absolute inset-0"
-        // Real-device testing on a mid-range phone showed [1, 1.2] read as
-        // soft/blurry: capping dpr well below a phone's real
-        // devicePixelRatio (commonly 2-3x) forces the browser to upscale a
-        // genuinely lower-resolution buffer to fill the CSS-pixel-sized
-        // canvas, which shows up as overall softness — a different problem
-        // from anti-aliasing (`gl.antialias` below), which only smooths
-        // edges and was already correctly enabled.
-        //
-        // Raised to [1, 2] — higher than even the desktop/tablet "full"
-        // scene's [1, 1.6] — because this tier already cuts its two most
-        // GPU-expensive subsystems entirely (the atmosphere plane and the
-        // postprocessing stack, see file header), which buys exactly this
-        // kind of resolution headroom back. Verified smooth (no dropped
-        // frames under simulated touch-drag) at this value; see the
-        // delivery notes for the mid-range-device caveat.
-        dpr={[1, 2]}
-        gl={{ antialias: true, powerPreference: "high-performance" }}
-        camera={{ position: [0, 0, 6.4], fov: 40 }}
-        onCreated={() => setReady(true)}
-        style={{ opacity: ready ? 1 : 0, transition: "opacity 700ms ease", pointerEvents: "none" }}
-      >
-        <ambientLight intensity={0.32} />
-        <hemisphereLight args={["#eef2ff", "#050506", 0.5]} />
-        <directionalLight position={[3, 4, 5]} intensity={0.55} color="#ffffff" />
-        <directionalLight position={[-4, 1.2, 3.5]} intensity={0.4} color="#ffffff" />
-        <pointLight position={[-3.5, -1, -2.5]} intensity={20} color="#1D4ED8" />
-        <pointLight position={[2.6, -1.6, 1.6]} intensity={7} color="#1D4ED8" />
-        <GXFormLite pointerRef={pointer} touchRef={touchTarget} />
-        {/* No EffectComposer/Bloom/ChromaticAberration/Noise — see file
-            header for why this is the phone tier's other big cost cut. */}
-      </Canvas>
-
-      <GXTouchGlow targetRef={touchTarget} />
-
-      <div
-        aria-hidden
-        data-gx-cursor="drag"
-        className="absolute top-1/2 left-1/2 h-[60%] w-[60%] max-h-[380px] max-w-[380px] -translate-x-1/2 -translate-y-1/2"
-        style={{ pointerEvents: "auto", touchAction: "none" }}
-        onPointerDown={touchHandlers.onPointerDown}
-        onPointerMove={(event) => {
-          handlePointerMove(event);
-          touchHandlers.onPointerMove(event);
-        }}
-        onPointerUp={touchHandlers.onPointerEnd}
-        onPointerCancel={touchHandlers.onPointerEnd}
-        onPointerLeave={handlePointerLeave}
-      />
-    </div>
+    </group>
   );
 }

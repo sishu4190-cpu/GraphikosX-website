@@ -13,7 +13,14 @@ const steps = [
 
 export function CustomerJourney() {
   return (
-    <section className="relative overflow-hidden bg-grey-100 py-24 md:py-32">
+    // Phase 3: id + bg-grey-100/90 (was fully opaque bg-grey-100) — this is
+    // one of the persistent 3D experience's four chapters (see
+    // GXExperience.tsx / types.ts's CHAPTER_IDS), so its own background can
+    // no longer be fully opaque or it would hide the canvas sitting behind
+    // it regardless of paint order. 90% keeps the step timeline fully
+    // legible while letting JourneyScene's ambient path/particles read
+    // faintly through, mostly at the section's edges away from the text.
+    <section id="gx-journey-section" className="relative overflow-hidden bg-grey-100/90 py-24 md:py-32">
       <div aria-hidden className="gx-bg-diagram-grid" />
       <CursorAtmosphere tone="light" />
       <Container className="relative z-10">
