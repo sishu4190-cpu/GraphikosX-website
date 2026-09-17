@@ -26,8 +26,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.6 },
     ...serviceRoutes,
     ...industryRoutes,
-    // /privacy and /terms are intentionally excluded: they are marked noIndex
-    // (see buildMetadata calls in those pages) as standard practice for
-    // legal boilerplate pages, so they are omitted from the sitemap too.
+    // /privacy-policy, /terms-of-service, and /data-deletion are
+    // intentionally excluded: they are marked noIndex (see buildMetadata
+    // calls in those pages) as standard practice for legal boilerplate
+    // pages, so they are omitted from the sitemap too. (Formerly /privacy
+    // and /terms — both now 301-redirect to their new paths.)
   ];
 }

@@ -76,6 +76,20 @@ const nextConfig: NextConfig = {
         destination: "/industries",
         permanent: true,
       },
+      // Legal & Meta-compliance pass: the legal pages moved to the exact
+      // URLs Meta's app-review requires (/privacy-policy, /terms-of-service)
+      // — old links/bookmarks to the previous /privacy and /terms paths
+      // still resolve correctly via a permanent redirect rather than 404ing.
+      {
+        source: "/privacy",
+        destination: "/privacy-policy",
+        permanent: true,
+      },
+      {
+        source: "/terms",
+        destination: "/terms-of-service",
+        permanent: true,
+      },
     ];
   },
   experimental: {

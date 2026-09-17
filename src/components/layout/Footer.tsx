@@ -99,12 +99,24 @@ export function Footer() {
         </Container>
       </div>
 
+      {/* This bar sits in the same bottom-right screen corner as the fixed
+          FloatingWhatsApp button at every breakpoint (`justify-between`
+          pins the links group to the Container's own right edge, which is
+          also where the button anchors via `fixed right-* bottom-*`). Two
+          short links ("Privacy"/"Terms") used to just clear it; three
+          longer labels ("Privacy Policy"/"Terms of Service"/"Data
+          Deletion") do not, confirmed via a bounding-box overlap check at
+          390–834px. `pr-20 sm:pr-24` reserves enough clearance beyond the
+          button's own footprint (56px + its 20–28px offset) at every width
+          this Container renders at — verified no overlap from 390px up to
+          desktop. */}
       <div className="border-t border-white/10 py-6">
-        <Container className="flex flex-col items-center justify-between gap-2 text-xs text-grey-500 md:flex-row">
+        <Container className="flex flex-col items-center justify-between gap-2 pr-20 text-xs text-grey-500 sm:pr-24 md:flex-row md:pr-24">
           <p>&copy; {new Date().getFullYear()} GraphikosX · Founded by {company.founder.name}</p>
-          <div className="flex gap-6">
-            <Link href="/privacy" className="hover:text-accent">Privacy</Link>
-            <Link href="/terms" className="hover:text-accent">Terms</Link>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-2">
+            <Link href="/privacy-policy" className="hover:text-accent">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="hover:text-accent">Terms of Service</Link>
+            <Link href="/data-deletion" className="hover:text-accent">Data Deletion</Link>
           </div>
         </Container>
       </div>

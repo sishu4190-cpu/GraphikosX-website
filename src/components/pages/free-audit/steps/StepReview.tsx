@@ -77,7 +77,7 @@ export function StepReview({
 
       <p className="text-xs text-grey-500">
         By submitting, you agree to be contacted about your Free Audit. We don&rsquo;t share your details with anyone else. See our{" "}
-        <a href="/privacy" className="underline hover:text-accent">
+        <a href="/privacy-policy" className="underline hover:text-accent">
           Privacy Policy
         </a>
         .

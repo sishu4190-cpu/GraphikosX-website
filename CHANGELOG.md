@@ -2679,3 +2679,379 @@ not acted on here. Phase 6 (mobile/accessibility/performance QA across the
 full seven-chapter experience) remains queued and is the master plan's
 final phase.
 
+## Immersive 3D scroll redesign — Phase 6: mobile/accessibility/performance QA (final phase)
+
+Master plan's sixth and final phase. Unlike Phases 2–5, this phase adds no
+new 3D content — it is a QA pass over the full seven-chapter persistent
+experience shipped across Phases 2–5 (Hero, Journey, Problem, Industries,
+BuildGrowScale, Ecosystem, FinalCTA), covering accessibility, mobile/touch
+behavior, and performance, plus fixing whatever real issues that QA turned
+up.
+
+### 1. Accessibility fix — `aria-hidden` on the 3D wrapper
+
+**`src/components/three/experience/GXExperience.tsx`** — the outer wrapper
+div now carries `aria-hidden="true"` explicitly. Every individual piece
+already inside it was already marked `aria-hidden` on its own
+(`GXFallback.tsx`'s SVG, `GXTouchGlow.tsx`'s glow div, the CSS-only
+touch-drag hit region has no accessible name/role of its own either), but
+the actual `<canvas>` element React Three Fiber mounts inside `GXCanvas.tsx`
+never was, and nothing guaranteed a future addition here would remember to
+add one. This is purely decorative/ambient content with no keyboard or
+screen-reader equivalent interaction — dragging the 3D hologram has no
+accessible fallback path, nor should it need one, since `GXFallback.tsx`
+already covers reduced-motion/low-power users with its own static,
+`aria-hidden` mark. Hiding the whole subtree at the root is the safer,
+more robust place to guarantee this than relying on every child staying
+individually marked forever.
+
+**Keyboard navigation sweep** (70-press Tab sweep across the homepage at
+1600×1000, real Chromium): confirmed 0 of 70 focus stops land inside the
+`aria-hidden` 3D wrapper, and 0 focused elements had zero size — the 3D
+layer is correctly invisible to keyboard/AT navigation and takes no tab
+stops of its own. Separately noticed 5 elements sitewide with no visible
+focus outline or box-shadow (both "Get a Free Audit" header CTAs, the
+"01 Doctors & Clinics" industry-orbit button, the "View All Industries"
+link, and one "Website" list-item span) — all pre-existing UI unrelated to
+the 3D redesign, none touched by Phases 2–5's own chapters. Noted here for
+visibility but deliberately left unfixed as out of scope for this phase.
+
+### 2. Accessibility fix — sitewide eyebrow-label contrast (`SectionHeader.tsx`)
+
+**Root cause:** `src/components/ui/SectionHeader.tsx`'s eyebrow label used
+`tone === "dark" ? "text-accent" : "text-accent"` — a no-op ternary, so the
+eyebrow's color never actually changed with `tone`, unlike the headline
+(`text-paper`/`text-ink`) and description (`text-grey-300`/`text-grey-700`)
+directly below it, which both branch correctly. On a dark section this left
+the regular `--color-accent` blue (`#1d4ed8`) sitting on a dark background
+it was never designed for.
+
+This is a **pre-existing, sitewide bug**, not something introduced by the
+Phases 3–5 3D redesign — confirmed via three independent methods: (1) direct
+pixel-sampled measurement against the Ecosystem chapter's actual rendered
+background (2.62:1, fails the 4.5:1 AA threshold for this text's size); (2)
+a theoretical check against the pure, unblended `--color-ink: #000000`
+background from `globals.css` (3.13:1, still fails even in the
+best-case/highest-contrast scenario); (3) Lighthouse's own automated
+`color-contrast` audit independently flagging the same element. Because
+`SectionHeader.tsx` is shared by every homepage section and several inner
+pages, the bug's blast radius is sitewide, not limited to the 6 chapters
+this project touched — confirmed by grep: dark-tone eyebrows also appear on
+the homepage's `BusinessOutcomes` and `CostOfWaiting` sections, and on
+every industry-detail and service-detail page's "The GraphikosX Approach"
+/ "Industry Ecosystem" sections.
+
+**Fix (approved by Prakash):** both the `animate={false}` and
+`animate={true}` render branches now use
+`tone === "dark" ? "text-[var(--gx-blue-bright)]" : "text-accent"` for the
+eyebrow — light-tone sections are untouched; dark-tone sections switch to
+`--color-accent-bright` (`#7c9cff`), an existing design-system token already
+used elsewhere in the codebase for this exact purpose (e.g.
+`BuildGrowScale.tsx`'s hover border). Re-measured after the fix:
+Industries' "Specialized by Choice" now reads 4.92:1 (was failing) and
+Ecosystem's "The GraphikosX Ecosystem" now reads 6.68:1 (was 2.62:1) against
+their actual rendered backgrounds — both comfortably clear of the 4.5:1 AA
+bar. The worst-case theoretical check (against pure black) is 8.05:1.
+Verified visually and via computed style across all 6 real dark-tone
+`SectionHeader` call sites sitewide, not just the 3D chapters: homepage
+Industries, Ecosystem, BusinessOutcomes, and CostOfWaiting sections, plus
+one industry-detail page (`/industries/healthcare`) and one service-detail
+page (`/services/brand-strategy`) — all render the corrected, clearly
+readable brighter blue with no other visual regression.
+
+**Separately noticed, not fixed (out of scope, flagged for awareness only):**
+the same fresh contrast pass turned up one unrelated, pre-existing
+near-miss — `CustomerJourney`'s body/description paragraph ("Your digital
+presence is influencing buying decisions...") measured 4.38:1 against its
+light background, just under the 4.5:1 AA bar for normal-size text. This is
+a different element (body copy, not an eyebrow), on a different tone
+branch, and was not part of what was proposed or approved for this phase —
+left untouched. Worth a look in a future pass if the user wants it chased
+down.
+
+### 3. Tablet device-tier question — investigated, no change made
+
+Per the Phase 2 capability gate in `GXExperience.tsx`
+(`prefers-reduced-motion` / `deviceMemory < 4` / no WebGL → `"static"`,
+else `innerWidth < 640` → `"lite"`, else `"full"`), tablets (768–1023px)
+currently land in the `"full"` tier — same postprocessing stack
+(Bloom/ChromaticAberration/Noise) as desktop. Prakash was asked whether to
+widen the `"lite"` (no-postprocessing) tier to also cover tablets, given
+this phase's performance findings below, and chose to **leave it as-is**
+(recommended: test the live site with real-world tools like PageSpeed
+Insights first, and revisit only if real user data shows an issue). No code
+change made for this item — this is Phase 2's original capability-gating
+logic, unchanged since before the 3D redesign began.
+
+### 4. Performance profiling — Lighthouse, mobile, throttled
+
+Measured with the Lighthouse CLI (mobile form factor, simulated throttling,
+412×823 viewport, 4× CPU slowdown — matching this project's existing Sep 7
+pre-redesign baseline exactly for an apples-to-apples comparison). Important
+caveat, unchanged from Phase 4: this sandbox's Chromium has no real GPU
+(SwiftShader software rendering only), so these are not representative of
+real end-user hardware in absolute terms — but the relative, controlled
+comparison below is still a meaningful signal.
+
+| Run | Performance score | Total Blocking Time | Largest Contentful Paint | Speed Index |
+|---|---|---|---|---|
+| Pre-redesign baseline (Sep 7) | 0.80 | 674 ms | 1574 ms | 4491 |
+| Current site, 3D active | 0.43 | 12,172 ms | 5292 ms | 7892 |
+| Current site, 3D forced off (`prefers-reduced-motion`) | 0.73 | 711 ms | 3631 ms | 1457 |
+
+The isolation run (3D forced off via the same `prefers-reduced-motion`
+media query real users with that OS setting get automatically) shows the
+regression collapses to near-baseline — 711ms TBT vs. the pre-redesign
+baseline's 674ms — cleanly attributing essentially the entire measured
+regression to the 3D layer itself, not to any other code Phases 2–5 added.
+Lighthouse's own accessibility score for the "3D active" run was 0.96, with
+`color-contrast` as the only failing audit — the exact bug fixed in §2
+above; re-running Lighthouse after the fix was not repeated in full here
+since the fix directly targets that flagged element and was independently
+re-verified via pixel-sampled contrast math (§2).
+
+**A nuance beyond Phase 4's original framing:** Phase 4 attributed the
+performance cost mainly to the Bloom/ChromaticAberration/Noise
+postprocessing stack. This test ran at a 412px mobile viewport, which
+already gets the postprocessing-free `"lite"` tier (confirmed via the
+capability-gate logic above) — and still showed the regression. That means
+the cost measured here isn't purely postprocessing-specific; it extends to
+the base WebGL rendering cost itself under this sandbox's software
+rendering. This doesn't overturn Phase 4's finding (postprocessing is still
+real, additional cost on top, confirmed separately on `"full"`-tier
+viewports) — it broadens it. As with Phase 4, whether this justifies any
+further change is the user's call, informed by real-device data
+(PageSpeed Insights on the live site) rather than this GPU-less sandbox —
+no code was changed in response to this finding.
+
+### 5. Mobile/tablet sweep
+
+Real Chromium, touch-enabled contexts, all seven chapters screenshotted at
+both 390×844 (mobile) and 834×1112 (tablet): zero console or page errors at
+either breakpoint. At 1024px+touch (the `lg:` breakpoint where the
+Industries orbit diagram switches from its mobile list layout to the
+desktop-style radial diagram), confirmed the diagram renders and its
+industry-node touch targets measure 64–70px per side — comfortably above
+the 44px WCAG 2.1 touch-target guideline.
+
+### 6. Debug attributes removed
+
+The temporary `data-gx-active-chapter` / `data-gx-mode` attributes added to
+`GXExperience.tsx`'s wrapper for this phase's own verification (chapter/
+mode-per-viewport checks, the keyboard-nav sweep's "did focus ever land
+inside the 3D wrapper" check) were removed before delivery, per this
+project's standing practice. Confirmed absent afterward; `aria-hidden="true"`
+remains as the only addition to that element.
+
+**Verification performed:** `npx tsc --noEmit` clean; `npx eslint .` — 18
+errors / 2 warnings, unchanged baseline (all in `HeroSceneLite.tsx`,
+pre-existing React Compiler purity warnings unrelated to this phase); `npx
+next build` clean. Post-fix, post-debug-attribute-removal re-run of the
+mobile/tablet console-error sweep: zero errors at both breakpoints. Contrast
+re-measured after the fix across all 19 originally-sampled text elements
+sitewide: both previously-failing eyebrows now pass; the one unrelated
+near-miss noted in §2 was left as found, not fixed.
+
+**This closes the master plan's six phases.** Phases 2–5 added the
+persistent 3D scroll experience chapter by chapter; Phase 6 verified it
+against real accessibility, mobile, and performance concerns and fixed the
+two genuine issues that QA turned up (the missing root-level `aria-hidden`,
+and the sitewide eyebrow-contrast bug), while explicitly declining to
+change the tablet device tier per the user's own call and flagging — not
+silently fixing — two smaller, unrelated, pre-existing items (the 5
+missing focus-outline spots; the `CustomerJourney` body-text near-miss) for
+a possible future pass.
+
+---
+
+## Legal & Meta compliance — Phase 1: Privacy Policy, Terms of Service, Data Deletion pages
+
+New initiative, separate from the Immersive 3D scroll redesign above — preparing the site's legal/privacy
+infrastructure ahead of Meta Developer App publishing for the GraphikosX AI Assistant (a WhatsApp Cloud API +
+FastAPI + OpenAI bot being built separately, not part of this Next.js repo). Phase 1 covers the three pages Meta's
+app review requires at exact URLs, and the plumbing to get visitors and old links to them correctly. Phases 2
+(WhatsApp AI disclosure copy + a documented Meta/Indian-law compliance review) and 3 (security review, validation,
+deployment prep) are queued separately, per the same one-phase-at-a-time approach used throughout this project.
+
+**New pages** (replacing the previous `/privacy` and `/terms`, which are now retired in favor of these — see
+redirects below):
+
+- **`src/app/privacy-policy/page.tsx`** — full Privacy Policy at `/privacy-policy`. Rewritten from the previous
+  `/privacy` page (which only covered website forms) to also cover the GraphikosX AI Assistant: what it is, that it
+  runs on the WhatsApp Business Platform, that message content may be sent to OpenAI's API to help generate a
+  response, and that a human can take over at any time. Structured into 17 numbered sections (identity, scope,
+  categories of information, how/why collected, the AI Assistant, who we share with, retention, rights, security,
+  abuse prevention, international processing, cookies/analytics, third-party links, children's privacy, changes,
+  contact) — broadly matching the section list the compliance brief asked for.
+- **`src/app/terms-of-service/page.tsx`** — full Terms of Service at `/terms-of-service`. Rewritten from the
+  previous `/terms` page, adding a dedicated "AI-generated responses and their limitations" section (nothing the AI
+  Assistant says is a confirmed quotation, signed agreement, guaranteed outcome, or confirmed booking unless a team
+  member confirms it in writing) and a "Human assistance" section.
+- **`src/app/data-deletion/page.tsx`** — new page at `/data-deletion`. Explains how to request deletion (email
+  `prakash@graphikosx.in` with a pre-filled subject line, or WhatsApp the same request — no account required), what
+  identifying information is needed, how requests are verified (replying via the same channel/number the original
+  enquiry came from, to avoid disclosing or deleting someone else's data), which systems may hold the information,
+  how requests are processed and communicated, and an honest note on legal-retention/backup limitations. Deliberately
+  does not invent a fixed deletion deadline (e.g. "within 30 days") — no such operational commitment or applicable
+  legal deadline has been confirmed yet.
+
+**What was deliberately left honest rather than invented**, per the brief's own instruction not to fabricate
+figures: the AI Assistant's exact data-retention period and backup-deletion timelines are described in general terms
+("as long as reasonably necessary... we are finalising the exact schedule") rather than a specific number of days,
+since the backend that would determine this (Python/FastAPI/SQLite) is still being built and had not yet been
+shared for review at the time this phase shipped. **Flagged for Prakash, not resolved here:** a specific
+jurisdiction/venue for the Terms' "Governing law" clause (currently just "the laws of India", matching the previous
+page — no city/court was specified); confirmation of whether GA4/analytics or any lead webhook/CRM is actually live
+in production (the repo ships with zero env vars set by default — Prakash confirmed no webhook/CRM is live and
+email-only lead delivery via Resend is accurate, but was not yet sure whether GA4 is configured on Vercel, so the
+Privacy Policy's cookies/analytics section currently states "not confirmed to be active" rather than a firm yes/no).
+
+**URL migration:** per Prakash's choice (new canonical URLs + redirect the old ones, over leaving both live), the
+old `src/app/privacy/page.tsx` and `src/app/terms/page.tsx` were deleted, and `next.config.ts`'s existing
+`redirects()` array (previously just `/industries/hospitality` → `/industries`) gained two permanent redirects:
+`/privacy` → `/privacy-policy` and `/terms` → `/terms-of-service`. Verified via `curl`: both return `308 Permanent
+Redirect` to the correct destination, and the three new routes all return `200`.
+
+**Footer** (`src/components/layout/Footer.tsx`) — the bottom bar's two links ("Privacy"/"Terms", pointing at the
+old paths) became three ("Privacy Policy"/"Terms of Service"/"Data Deletion", pointing at the new ones).
+
+**Regression found and fixed during verification, not part of the original ask:** the longer three-link row now
+reaches far enough right, at several breakpoints (768–1280px, confirmed via a Playwright bounding-box overlap
+check), to sit underneath the site's fixed `FloatingWhatsApp` button in the same bottom-right corner — the previous
+two short links ("Privacy"/"Terms") apparently cleared it, but "Data Deletion" did not. Fixed with two changes: the
+link row stacks vertically and centers below the `sm` breakpoint instead of wrapping onto one tight line (avoids the
+issue on phones, where it was worst), and the bar's own right padding is explicitly reasserted at both `sm` and `md`
+(`pr-20 sm:pr-24 md:pr-24`) so it isn't silently overridden by `Container`'s own `md:px-10` — Tailwind's mobile-first
+cascade means a later breakpoint's shorthand padding utility beats an earlier breakpoint's directional override on
+the same property unless it's reasserted at that breakpoint too, which is exactly what happened on the first attempt
+at this fix (still overlapping at 768–1280px) before being caught by testing across the full width range rather than
+just one or two breakpoints. Re-verified after the fix: zero overlap from 360px through 1920px.
+
+**Other internal links updated** to the new paths: the Contact form and Free Audit review step's "See our Privacy
+Policy" links (`ContactForm.tsx`, `StepReview.tsx`), and the `sitemap.ts`/`robots.ts` comments describing why the
+legal pages are excluded from the sitemap / not disallowed in `robots.txt` (both pages keep the same
+`noIndex: true` + "allow crawling, block indexing via meta tag" approach as before — deliberately not blocking
+these paths in `robots.txt`, since that would also block Meta's own app-review crawler from reaching them).
+
+**Verification performed:** `npx tsc --noEmit` and `npx next build` both clean; `npx eslint .` unchanged from
+baseline (18 errors / 2 warnings, all pre-existing in `HeroSceneLite.tsx`, unrelated to this phase). Real Chromium:
+all three new routes and both old redirected paths checked directly via `curl` (200s and correct 308 redirects); a
+12-page sitewide sweep (homepage, every top-level page, two dynamic detail pages, and the three new legal pages) at
+1440×900 showed zero console or page errors and every route returning 200; the three new pages individually checked
+at both 1440×900 and 390×844 for horizontal overflow (none) and console errors (none); the data-deletion page's
+"Email a Deletion Request" button (initially inheriting the shared `LegalProse` prose styling's blue-underlined link
+look instead of rendering as a button, since Tailwind's `[&_a]` descendant-selector rule and the button's own
+utility classes have equal specificity) was fixed with important-modifier overrides (`text-paper! no-underline!`)
+and re-verified visually.
+
+**Out of scope for Phase 1, queued for later phases:** the WhatsApp AI transparency disclosure text and where it
+should actually appear (the bot lives in a separate backend, not this frontend, so this needs its own design/backend
+discussion — Phase 2); the documented Meta Platform Terms / WhatsApp Business Messaging Policy / India DPDP Act 2023
+compliance review distinguishing implemented vs founder-decision items (Phase 2); the secrets/security audit,
+`.env` exposure check, and final Meta Developer App field verification (Phase 3); and deploying any of this to the
+live site (not done in this cloud sandbox — same manual diff-and-copy workflow as every previous phase, once
+Prakash approves this phase locally).
+
+---
+
+## Legal & Meta compliance — Phase 2: WhatsApp AI disclosure + Meta/DPDP compliance review
+
+Second unit of the legal/compliance initiative (Phase 1 above shipped the three required pages). Phase 2
+covers the two remaining pieces that don't need the actual production push: an on-site AI-transparency
+disclosure, and a documented review of Meta's and India's current requirements.
+
+**`META_WHATSAPP_COMPLIANCE.md`** (new, repo root, matching the existing `DEPLOYMENT.md`/`README.md`
+documentation pattern) — a sourced review covering: confirmation that this repo's Data Deletion Instructions
+URL approach satisfies Meta's app-review requirement (an automated callback URL is an alternative, not a
+requirement); the Meta Developer App field values ready to submit; and, most importantly, **WhatsApp's
+October 2025 policy change banning general-purpose AI chatbots from the Business Platform, effective 15
+January 2026** — researched directly since this is a live, current restriction the master brief didn't
+mention and directly affects how the planned AI Assistant needs to be built (purpose-built/scoped bots
+remain allowed; open-ended, ChatGPT-style conversation does not). Also covers WhatsApp opt-in requirements
+(this site's click-to-chat pattern already satisfies them), the 24-hour customer service messaging window,
+what Meta's own data-retention/security terms do and don't cover (they don't reach what happens to a
+message after GraphikosX's backend receives it — that's GraphikosX's own responsibility, already disclosed
+in the Privacy Policy), and India's DPDP Act 2023/Rules 2025 status and obligations. Every claim is sourced
+to either this repo's own code or a cited public URL (Meta's own developer documentation, TechCrunch,
+respond.io, turn.io, and two DPDP-focused legal/compliance write-ups) — Meta's own pages were fetched and
+quoted directly where possible rather than relied on secondhand. Ends with a status table separating what's
+already implemented from what needs a founder decision versus backend engineering, and suggested opening
+disclosure copy for the AI Assistant's first WhatsApp message (a backend item — this frontend can't deliver
+it, since the bot isn't part of this repo). Explicitly framed as not legal advice, given how recently both
+the WhatsApp policy and the DPDP Act's phased rollout have moved, with a recommendation to get it reviewed
+by a lawyer before relying on it for the actual Meta submission.
+
+**`src/components/pages/contact/ContactChannels.tsx`** — the Contact page's WhatsApp channel card now
+carries a small note ("May be answered by our AI Assistant — a person is available anytime you ask. See our
+Privacy Policy.") linking to `/privacy-policy`, scoped to only the WhatsApp card since Call and Email aren't
+AI-assisted. This is the one piece of the AI-transparency disclosure this frontend can actually deliver
+today — the in-conversation disclosure (the brief's suggested "You're chatting with GraphikosX AI
+Assistant..." message) has to be sent by the AI Assistant itself, which lives in a separate backend not yet
+shared for review; that suggested copy is included in `META_WHATSAPP_COMPLIANCE.md` for whoever builds it,
+not implemented here. Required restructuring the card slightly: the note contains its own link to the
+Privacy Policy, which can't nest inside the card's existing whole-card `<a>` without producing invalid
+nested anchors, so the note now renders as a sibling paragraph below the card's main link rather than inside
+it.
+
+**Verification performed:** `npx tsc --noEmit`, `npx eslint .` (unchanged baseline, 18 errors/2 warnings),
+and `npx next build` all clean. Screenshotted the Contact page at 1440×900 and 390×844 — the new note reads
+clearly, no horizontal overflow, and the WhatsApp/Call/Email cards still align correctly as a row (the
+WhatsApp card is now slightly taller due to the note; the grid's row-stretch behavior keeps all three card
+outlines the same height regardless). A 10-page sitewide sweep (homepage, every top-level page, and all
+three legal pages) at 1440×900 showed zero console or page errors and every route returning 200.
+
+**Out of scope for this phase, still queued:** Legal Phase 3 (secrets/security review, full validation
+pass, deployment instructions, final live-URL verification). The backend-dependent items in
+`META_WHATSAPP_COMPLIANCE.md`'s summary table (opening-message disclosure, system-prompt scoping, 24-hour
+window handling, exact retention period) remain unresolved until the FastAPI/OpenAI/SQLite backend is
+shared for review — flagged again here, not silently worked around.
+
+---
+
+## Legal & Meta compliance — Phase 3: security review, validation, deployment readiness (final phase)
+
+Third and final unit of the legal/compliance initiative. No page content changed this phase — this is the
+audit-and-verify pass, plus one small QA-tooling fix.
+
+**`SECURITY_REVIEW.md`** (new, repo root) — the secrets/credentials audit the brief asked for, the full
+validation results, deployment instructions, and the final Meta Developer App field values. Full detail in
+the file itself; summary:
+
+- **Secrets audit:** checked (not assumed) that no real `.env` file, hardcoded API key, token, or
+  credential-shaped string exists anywhere in tracked source, git history (including deleted files), or —
+  separately and more importantly — the actual **built client-side bundle** (`.next/static`), since that's
+  what a real attacker or Meta reviewer could actually see. Confirmed the sensitive server-only env vars
+  (`LEAD_WEBHOOK_URL`, `EMAIL_API_KEY`, etc.) are only ever read from non-`"use client"` files and don't
+  appear anywhere in client output; confirmed `NEXT_PUBLIC_GA_MEASUREMENT_ID` is the only intentionally
+  public variable in the codebase. Nothing found — nothing to flag for rotation, no credentials touched.
+- **Validation:** `tsc`/`eslint`/`next build` all clean (eslint baseline unchanged). No automated test suite
+  exists for this project (noted honestly rather than skipped silently). Ran the existing Phase 2F
+  `scripts/crawl.mjs` QA script (updated this phase — see below) against a real production build: all 36
+  checked routes return the expected status, zero broken internal links out of 43 discovered sitewide, and
+  all three new legal pages have correct titles, descriptions, canonical URLs, H1s, and JSON-LD.
+- **Deployment:** no new environment variables required for any of Legal Phases 1–3; same manual
+  diff-and-copy-and-push workflow as every previous phase, since this session has no direct access to the
+  live GitHub remote or hosting provider.
+- **Important finding, not something to act on unilaterally:** checked `https://graphikosx.in/` directly as
+  the brief's own "verify live URLs before confirming ready for Meta" instruction required, and the live
+  site does not match this repository at all right now — a homepage headline, footer, and phone number from
+  an older version of the site, predating even the 3D redesign (Phases 2–5), not just missing the legal
+  pages. `/privacy-policy` correctly 404s (nothing's been pushed there yet), but this suggests something
+  beyond "Legal Phases 1–3 just haven't shipped" — possibly a DNS, branch, or Vercel Production-vs-Preview
+  issue. Flagged clearly in `SECURITY_REVIEW.md` §3 for Prakash to check directly; **the Meta Developer App
+  URLs should not be submitted until this is resolved and the URLs are confirmed actually live.**
+
+**`scripts/crawl.mjs`** — updated the route list from the retired `/privacy`/`/terms` to the current
+`/privacy-policy`/`/terms-of-service`/`/data-deletion`, so this QA script (used above, and presumably worth
+reusing in future phases) checks the pages that actually exist now instead of two paths that now just
+301-redirect.
+
+**Verification performed:** documented inline above and in full in `SECURITY_REVIEW.md`.
+
+**This closes the three-phase legal/compliance initiative.** Phase 1 shipped the required pages, Phase 2
+shipped the AI disclosure and compliance research, Phase 3 confirms none of it leaks a secret, all of it
+builds and links correctly, and — critically — that it isn't safe to tell Meta these URLs are ready until
+the live-site discrepancy above is sorted out. `SECURITY_REVIEW.md` §5 has the full consolidated list of
+what's still open across all three phases, most of which now comes down to the WhatsApp AI Assistant backend
+code (still not shared) and a handful of founder decisions (governing-law venue, analytics confirmation,
+DPDP grievance-officer naming) that were deliberately left as honest open flags rather than guessed at.

@@ -209,7 +209,7 @@ export function ContactForm() {
 
             <p className="text-xs text-grey-500">
               By submitting, you agree to be contacted about your enquiry. See our{" "}
-              <a href="/privacy" className="underline hover:text-accent">
+              <a href="/privacy-policy" className="underline hover:text-accent">
                 Privacy Policy
               </a>
               .

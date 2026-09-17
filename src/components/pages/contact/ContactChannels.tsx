@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
 import { GlowCard } from "@/components/motion/GlowCard";
@@ -19,6 +20,20 @@ const channels = [
     label: "WhatsApp",
     value: company.phoneDisplay,
     href: whatsappLink("Hi GraphikosX, I'd like to get in touch."),
+    // AI-transparency note (Legal Phase 2) — WhatsApp is the only channel
+    // here that may route to the GraphikosX AI Assistant, so this stays
+    // scoped to just this card rather than a blanket note under all three.
+    // Kept honest about what's live today: the note describes what CAN
+    // happen once the AI Assistant is live, not a claim that it already is.
+    note: (
+      <>
+        May be answered by our AI Assistant — a person is available anytime you ask. See our{" "}
+        <Link href="/privacy-policy" className="underline hover:text-accent" onClick={(e) => e.stopPropagation()}>
+          Privacy Policy
+        </Link>
+        .
+      </>
+    ),
     icon: (
       <path d="M12 2a10 10 0 00-8.6 15.1L2 22l5.1-1.3A10 10 0 1012 2z" stroke="currentColor" strokeWidth="1.6" fill="none" />
     ),
@@ -61,12 +76,16 @@ export function ContactChannels() {
           {channels.map((channel, i) => (
             <Reveal key={channel.id} delay={i * 0.08}>
               <GlowCard tone="light" className="h-full rounded-2xl border border-ink/10 bg-grey-100/60 p-0">
+                {/* `note` (WhatsApp only) renders as a sibling below the main
+                    link, not nested inside it — it contains its own link to
+                    the Privacy Policy, and a link can't nest inside another
+                    link without breaking. */}
                 <a
                   href={channel.href}
                   onClick={() => track(eventMap[channel.id])}
                   target={channel.id === "whatsapp" ? "_blank" : undefined}
                   rel={channel.id === "whatsapp" ? "noopener noreferrer" : undefined}
-                  className="group flex h-full flex-col justify-between p-6"
+                  className="group flex flex-col justify-between p-6"
                 >
                   <span aria-hidden className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-ink text-paper transition-colors duration-200 group-hover:bg-accent">
                     <svg viewBox="0 0 24 24" className="h-5 w-5">
@@ -78,6 +97,7 @@ export function ContactChannels() {
                     <p className="mt-1 font-display text-lg font-bold text-ink">{channel.value}</p>
                   </div>
                 </a>
+                {channel.note && <p className="px-6 pb-6 text-xs leading-relaxed text-grey-500">{channel.note}</p>}
               </GlowCard>
             </Reveal>
           ))}
