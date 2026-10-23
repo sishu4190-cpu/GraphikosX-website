@@ -95,8 +95,15 @@ export function GXCanvas({
   return (
     <Canvas
       className="!absolute inset-0"
-      dpr={mode === "full" ? [1, 1.6] : [1, 2]}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      // "lite" is the phone tier (see GXExperience.tsx: width < 640px). Phones
+      // commonly report devicePixelRatio 2.5–3, and a WebGL canvas's fragment
+      // cost scales with the SQUARE of its pixel-ratio cap — this was
+      // previously [1, 2] here, a HIGHER ceiling than desktop's [1, 1.6],
+      // which meant the weaker-GPU tier was rendering more total pixels than
+      // the stronger one. Capped well below desktop's instead, since phone
+      // GPUs need the fill-rate relief more, not less.
+      dpr={mode === "full" ? [1, 1.6] : [1, 1.25]}
+      gl={{ antialias: mode === "full", powerPreference: "high-performance" }}
       camera={{ position: [0, 0, 6.4], fov: 40 }}
       onCreated={() => setReady(true)}
       frameloop={active ? "always" : "never"}
