@@ -1,7 +1,7 @@
 # GraphikosX — V2 Website (Phase 2E)
 
 Production codebase for the GraphikosX website rebuild. Every planned route is now live: homepage,
-`/about`, `/services` (+ 15 service pages), `/industries` (+ 10 industry pages), `/free-audit`,
+`/about`, `/services` (+ 17 service pages), `/industries` (+ 10 industry pages), `/free-audit`,
 `/contact`, `/privacy` and `/terms`, plus the conversion, lead-capture and analytics architecture
 behind the Free Audit and Contact forms. See "Phase 2 status" below for exactly what's built vs.
 what still needs production credentials before launch.
@@ -58,7 +58,7 @@ propagates everywhere (nav, footer, schema, metadata, sections):
 - `src/lib/data/services.ts` — the 15 canonical services (Build/Grow/Scale)
 - `src/lib/data/industries.ts` — the 10 canonical industries
 - `src/lib/data/service-details.ts` / `src/lib/data/industry-details.ts` — full per-page content for
-  the 15 service and 10 industry pages
+  the 17 service and 10 industry pages
 - `src/lib/data/free-audit-options.ts` — the Free Audit wizard's checkbox option sets (improvement
   areas, goals)
 - `src/lib/seo.ts` — per-page metadata builder (title/description/canonical/OG/Twitter/noIndex)
@@ -264,7 +264,7 @@ external services are required for the current (homepage-only) scope.
 ## Phase 2 status
 
 **Built (Phase 2A → 2E):** global design tokens, header, footer, homepage (all 16 sections),
-`/about`, `/services` (+ all 15 service pages), `/industries` (+ all 10 industry pages),
+`/about`, `/services` (+ all 17 service pages), `/industries` (+ all 10 industry pages),
 `/free-audit` (6-step wizard), `/contact`, `/privacy`, `/terms`. SEO/schema foundation across every
 page. Brand asset pipeline (logo, favicons, OG image). Self-hosted Manrope/Inter typography system.
 Full lead-capture architecture (`Lead` type, `submitLead()` Server Action, honeypot, rate limiting,
@@ -290,7 +290,7 @@ WhatsApp messaging. Every route is in `sitemap.ts` except `/privacy` and `/terms
 The full content graph is closed: every service page links to relevant, real industry pages and
 vice versa, `/services` and `/industries` link to every one of their children, and there are no dead
 `/services/*` or `/industries/*` links anywhere on the site. Every "Get a Free Audit" / "Contact" CTA
-across the entire site (homepage, about, services hub + all 15 service pages, industries hub + all
+across the entire site (homepage, about, services hub + all 17 service pages, industries hub + all
 10 industry pages, header, footer) was audited in Phase 2E and confirmed to point to a live,
 correctly-attributed URL. The only remaining gap is any future `/insights` content (Phase 2F+).
 
@@ -313,7 +313,7 @@ brand color.
   pre-background-removed export — crisp edges, true transparency, no halo. It's still a raster crop
   of a 3D mockup render rather than a vector file; swap in a vector/flat export if one becomes
   available for the smallest possible file size at very large display sizes.
-- The `/services` Build/Grow/Scale tab system renders all 15 services in the actual server-rendered
+- The `/services` Build/Grow/Scale tab system renders all 17 services in the actual server-rendered
   HTML at all times (only the active tab's *visibility* is CSS-controlled) specifically so nothing
   is hidden from crawlers behind a click — worth knowing if you inspect the DOM and see all three
   groups present at once.

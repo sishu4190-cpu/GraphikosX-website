@@ -126,14 +126,17 @@ live-site discrepancy above, I'm glad to re-check all three URLs directly and co
 | WhatsApp AI Assistant backend (FastAPI/OpenAI/SQLite) code review | Phase 1 | Still not shared — several items below depend on it |
 | Exact data-retention period for AI Assistant conversations | Phase 1 | Left general in the Privacy Policy pending backend review |
 | Terms of Service governing-law venue (city/court) | Phase 1 | Left as "laws of India" only — no venue specified |
-| Whether GA4/analytics is actually live on Vercel | Phase 1 | You weren't sure — Privacy Policy currently says "not confirmed to be active" |
+| Whether GA4/analytics is actually live on Vercel | Phase 1 | **Code is now consent-gated and ready** (see "Trust & compliance follow-up" in CHANGELOG.md) — still needs a real `NEXT_PUBLIC_GA_MEASUREMENT_ID` from a GA4 property you create, set in Vercel |
 | AI Assistant's in-chat opening disclosure message | Phase 2 | Suggested copy provided; needs backend implementation |
 | System prompt scoped to GraphikosX topics (WhatsApp's Jan 2026 policy) | Phase 2 | Flagged as a real compliance risk if the bot can go off-topic; needs backend implementation |
 | 24-hour WhatsApp customer-service messaging window handling | Phase 2 | Flagged for backend design; not addressed here |
 | DPDP Act grievance officer, formally named | Phase 2 | `prakash@graphikosx.in` already serves this role in practice |
 | DPDP Act breach-notification process | Phase 2 | Operational/process item, not a code change |
-| **Live site not matching this repo at all** | Phase 3 | **New finding — needs your Vercel/DNS check before anything can go live** |
+| **Live site not matching this repo at all** | Phase 3 | **Resolved** — confirmed live and matching this repo after the Phase 1–3 push (`e83a514`) deployed to Production and DNS checked out |
 | Legal review of `META_WHATSAPP_COMPLIANCE.md` and the live-readiness plan | Phase 3 | Recommended before relying on any of this for the actual Meta submission |
+| GA4 Measurement ID not yet created | This update | You chose to create a new GA4 property — guidance pending, separate from this code push |
+| Cookie banner | This update | Built — see CHANGELOG.md |
+| Public address | This update | Added at city/state level ("Vapi, Gujarat, India") — your explicit choice over a full street address |
 
 None of these block Phases 1–3 from being *correct and ready to deploy* — they're real gaps, but every one
 of them is either already flagged with honest, non-invented placeholder language, or is an operational

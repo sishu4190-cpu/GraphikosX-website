@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { FloatingWhatsApp } from "@/components/ui/FloatingWhatsApp";
 import { FirstVisitPopup } from "@/components/ui/FirstVisitPopup";
+import { CookieBanner } from "@/components/consent/CookieBanner";
 import { SmoothScrollProvider } from "@/components/motion/SmoothScrollProvider";
 import { CursorState } from "@/components/motion/CursorState";
 import { PageTransition } from "@/components/motion/PageTransition";
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <FloatingWhatsApp />
           <FirstVisitPopup />
+          <CookieBanner />
         </SmoothScrollProvider>
       </body>
     </html>

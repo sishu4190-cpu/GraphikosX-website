@@ -22,6 +22,19 @@ export function Footer() {
             </span>
           </div>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-grey-300">{company.description}</p>
+          <p className="mt-4 flex items-center gap-2 text-xs text-grey-500">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 flex-shrink-0" aria-hidden>
+              <path
+                d="M12 21s-7-7.2-7-12a7 7 0 0114 0c0 4.8-7 12-7 12z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                fill="none"
+                strokeLinejoin="round"
+              />
+              <circle cx="12" cy="9" r="2.4" stroke="currentColor" strokeWidth="1.6" fill="none" />
+            </svg>
+            {company.address.display}
+          </p>
         </div>
 
         <div>

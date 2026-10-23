@@ -37,7 +37,7 @@ export function ServiceSystem() {
         {/*
           All three groups render in the actual HTML at all times — only CSS
           visibility toggles with the active tab. This keeps every one of the
-          15 services present in server-rendered, crawlable markup (required
+          17 services present in server-rendered, crawlable markup (required
           for SEO/AEO/GEO) rather than mounted only after a client-side click.
         */}
         {groups.map((group) => {

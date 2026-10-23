@@ -1,17 +1,12 @@
 /**
  * Centralized analytics event helper.
  *
- * CURRENT STATE: no GA4 (or other analytics) script is wired into this
- * project yet — there is no measurement ID configured, so `window.gtag`
- * does not exist. track() checks for it defensively and no-ops safely
- * when it's absent, so every call site below can be wired up now without
- * waiting on analytics to be connected.
- *
- * PRODUCTION INTEGRATION STILL REQUIRED (see README):
- *  - Add the GA4 (or chosen analytics provider) loader script, typically
- *    in the root layout, gated behind a consent decision if required.
- *  - Once that script defines window.gtag, every track() call below
- *    starts firing with zero further code changes.
+ * GA4 is now wired in (GoogleAnalytics.tsx) but stays a safe no-op until
+ * two conditions are both met: NEXT_PUBLIC_GA_MEASUREMENT_ID is set in the
+ * hosting environment, AND the visitor has accepted the cookie banner
+ * (CookieBanner.tsx / src/lib/consent.ts). Until then, `window.gtag` never
+ * gets defined, so every track() call below safely no-ops — no further
+ * code changes are needed once both conditions are satisfied.
  *
  * Every event name used across the site is declared here as the single
  * source of truth, so call sites can't silently typo an event name.
@@ -31,7 +26,9 @@ export type AnalyticsEvent =
   | "founder_linkedin_clicked"
   | "popup_shown"
   | "popup_dismissed"
-  | "popup_submitted";
+  | "popup_submitted"
+  | "cookie_consent_accepted"
+  | "cookie_consent_declined";
 
 type AnalyticsPayload = Record<string, string | number | boolean | undefined>;
 

@@ -11,6 +11,12 @@ export function organizationSchema() {
     founder: { "@id": `${SITE_URL}/#founder` },
     email: company.salesEmail,
     telephone: company.phoneE164,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: company.address.locality,
+      addressRegion: company.address.region,
+      addressCountry: company.address.country,
+    },
     sameAs: [company.instagramUrl, company.linkedinUrl],
   };
 }

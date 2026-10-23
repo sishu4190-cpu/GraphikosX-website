@@ -18,7 +18,7 @@ export function ServicesHero() {
         </MaskReveal>
 
         <MaskReveal delay={0.15} as="p" className="mt-6 max-w-2xl text-base leading-relaxed text-grey-700 md:text-lg">
-          Fifteen capabilities, organised into one progression &mdash; Build, Grow, Scale &mdash; because a website
+          Seventeen capabilities, organised into one progression &mdash; Build, Grow, Scale &mdash; because a website
           without SEO, or SEO without a system to convert the traffic, rarely moves a business forward on its own.
         </MaskReveal>
       </Container>

@@ -9,7 +9,7 @@ const PATH = "/privacy-policy";
 const TITLE = "Privacy Policy";
 const DESCRIPTION =
   "How GraphikosX collects, uses, shares and protects information through this website and the GraphikosX AI Assistant on WhatsApp.";
-const UPDATED = "17 September 2026";
+const UPDATED = "23 October 2026";
 
 export const metadata: Metadata = buildMetadata({ title: `${TITLE} | GraphikosX`, description: DESCRIPTION, path: PATH, noIndex: true });
 
@@ -198,10 +198,13 @@ export default function PrivacyPolicyPage() {
 
         <h2>13. Cookies and analytics</h2>
         <p>
-          This website does not currently set cookies for advertising or cross-site tracking. As of this update, no
-          analytics or measurement tool is confirmed to be active on the live site; we are verifying this and will
-          revise this section if that changes. If we add analytics or measurement tools, we will update this policy
-          to describe what is collected and how you can opt out where applicable.
+          This website does not set cookies for advertising or cross-site tracking. When you first visit, a banner
+          asks whether we may use a minimal analytics cookie (Google Analytics 4) to understand how visitors use the
+          site &mdash; pages viewed, general location at a country/region level, and device type. This only loads if
+          you click &ldquo;Accept.&rdquo; If you click &ldquo;Decline,&rdquo; or simply close the banner without
+          choosing, no analytics script loads at all. Your choice is remembered on your device (not shared with us
+          individually) and you can change it at any time by clearing your browser&rsquo;s local site data for
+          graphikosx.in, which will show the banner again on your next visit.
         </p>
 
         <h2>14. Third-party links</h2>

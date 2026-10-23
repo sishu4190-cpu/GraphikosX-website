@@ -3055,3 +3055,111 @@ the live-site discrepancy above is sorted out. `SECURITY_REVIEW.md` §5 has the 
 what's still open across all three phases, most of which now comes down to the WhatsApp AI Assistant backend
 code (still not shared) and a handful of founder decisions (governing-law venue, analytics confirmation,
 DPDP grievance-officer naming) that were deliberately left as honest open flags rather than guessed at.
+
+## Trust & compliance follow-up — cookie consent, GA4 wiring, public address
+
+Prompted by a trending "20 things a real site needs" checklist the founder saw on social media. Most of
+the 20 items were already correctly built (confirmed by reading the actual source, not just re-testing the
+live site) — see the three genuine gaps resolved below.
+
+**Investigation corrected an earlier live-site read.** A prior pass tested the live site directly and
+flagged "form error states," "loading states" and "thank-you page" as unverified/partial. Reading the
+source this time showed all three are already properly implemented: `FieldShell` (`src/components/ui/
+form/fields.tsx`) renders accessible error text (`role="alert"`, red border, `aria-invalid`) per field; the
+Free Audit wizard's submit button already shows a "Submitting…" disabled state; and `FreeAuditSuccess.tsx`
+is a complete, already-built thank-you screen. The live-site test's "no error shown" result was native
+HTML5 `required`-attribute validation intercepting the empty-field case before React's own validation ever
+ran — expected browser behavior, not a defect. The one image flagged for a missing `alt` is intentionally
+decorative (wrapped in `aria-hidden`, informational content lives in adjacent text) — correct accessibility
+practice, not an oversight. None of these needed a code change.
+
+**1. Cookie consent banner (new).** `src/lib/consent.ts` is the single source of truth (one localStorage
+key, "accepted" | "declined", exposed via a `useConsent()` hook built on `useSyncExternalStore` — the
+React-recommended pattern for subscribing to an external store, and what keeps this off the
+`react-hooks/set-state-in-effect` lint rule this project enforces). `src/components/consent/
+CookieBanner.tsx` shows a bottom-left, non-blocking card (explicitly never a full-screen modal, consistent
+with how `FirstVisitPopup.tsx` is scoped to always be dismissible) on first visit only, with Accept/Decline.
+Positioned with a `bottom-24` clearance on every breakpoint specifically so it never overlaps the fixed
+bottom-right WhatsApp button — verified with a Playwright geometry check (zero intersection) and visually at
+390px and 1440px, not assumed.
+
+**2. GA4 analytics — consent-gated (code complete, ID not yet set).** `GoogleAnalytics.tsx` already existed
+from an earlier phase and loaded GA4 whenever `NEXT_PUBLIC_GA_MEASUREMENT_ID` was set, with no consent
+gate. It now also requires `useConsent() === "accepted"` before the gtag.js script loads at all — declining
+or ignoring the banner means the script never loads, not "loads but doesn't report." No Measurement ID
+exists in this codebase (the founder has not yet created a GA4 property); once one is created and the env
+var is set in Vercel, analytics starts working with zero further code changes, same as before.
+
+**3. Public address — city/state level (new).** Added `company.address` (`src/lib/data/company.ts`) —
+deliberately "Vapi, Gujarat, India" only, not a full street address, matching the founder's explicit choice
+and the fact that GraphikosX is a remote-first team with no office visitors would travel to. Displayed in
+the sitewide footer and on the Contact page, and added to the Organization JSON-LD's `address` field
+(`src/lib/schema.ts`) as a `PostalAddress` for search-engine trust signals.
+
+**Privacy Policy updated (§13, "Cookies and analytics")** to describe the actual consent mechanism now in
+place, replacing the earlier "no analytics confirmed active, verifying" placeholder language.
+
+**Verification:** `npx tsc --noEmit` clean. `npx eslint .` — 18 errors / 2 warnings, unchanged from the
+documented pre-existing baseline (all in `HeroSceneLite.tsx`, unrelated 3D-redesign code); zero new lint
+findings from this unit's files. `npx next build` — clean, all 40 routes compiled. Ran a local production
+server and used Playwright to confirm: the banner renders on first load (mobile 390px and desktop 1440px),
+Accept hides it and persists `localStorage`, the choice survives a reload without the banner reappearing,
+and there is no visual overlap with the floating WhatsApp button at either breakpoint. Footer and Contact
+page address placement checked visually via screenshot.
+
+---
+
+## Services architecture expansion — AI Video Editing, AI Chatbot Setup & Integration
+
+Driven by the "GraphikosX Website Upgrade — Master Implementation Brief" (founder-supplied). The brief
+asked for 4 new AI service areas: AI Video Editing & Content Production, AI Chatbot Setup & Integration,
+AI Workflow Automation, and AI-Powered Lead Generation.
+
+**Audit before writing any code (Phase 1, delivered separately as `PHASE1_AUDIT.md`)** found that 2 of
+the 4 requested areas already existed in the codebase under different names: "Workflow Automation" and
+"Lead Generation Systems" were both already full services with their own detail pages. Per the brief's
+own instruction not to duplicate an existing offering, those two were deepened in place rather than
+re-created, and only the genuinely new 2 — AI Video Editing & Content Production, and AI Chatbot Setup
+& Integration — were added as new services. This keeps the taxonomy at 17 services (not 19), avoiding a
+confusing near-duplicate pair on the live site.
+
+**1. Two new services added.** `src/lib/data/services.ts` — `ai-video-editing` (Grow group, outcome
+"Production Velocity") and `ai-chatbot-setup` (Scale group, outcome "Response Speed"). `src/lib/data/
+service-details.ts` — full `ServiceDetail` entries for both (problem narrative, definition, 5-phase
+approach, deliverables, outcome copy, FAQs, meta title/description, `ecosystem` and `industries`
+cross-links). No new routing or component code was needed: the existing shared template
+(`src/app/services/[slug]/page.tsx`) renders any service from its data entry alone, so both new pages,
+their SEO metadata, their `Service`/`BreadcrumbList`/`FAQPage` JSON-LD, and their `sitemap.xml` entries
+are all automatic.
+
+**2. Two existing services deepened, not duplicated.** `workflow-automation` and `lead-generation-systems`
+in `service-details.ts` — expanded `whenYouNeedIt`, `approach`, `deliverables` and outcome copy, added
+FAQs, and cross-linked the two into each other's `ecosystem`.
+
+**3. Cross-links updated.** `ecosystem` arrays in `content-production`, `ai-automation` and
+`social-media-management` now reference the 2 new services where thematically relevant, so visitors
+browsing an adjacent service see the new offerings.
+
+**4. Taxonomy count corrected everywhere it was hardcoded.** "15" → "17" in: `services.ts`'s own
+comment, `src/app/services/page.tsx`'s meta `DESCRIPTION`, `ServiceSystem.tsx`'s code comment, the
+**visible on-page hero copy** in `ServicesHero.tsx` ("Fifteen capabilities…" → "Seventeen capabilities…",
+caught by a visual screenshot pass — this one does not show up in a text/grep check of the data files
+alone, since it was hardcoded prose in a component, not derived from `services.length`), and 5 references
+in `README.md`. `CHANGELOG.md` and `FINAL_QA_REPORT.md` are historical logs and were deliberately left
+with their original "15" wording — those describe what was true at the time they were written.
+
+**5. Deliberately NOT touched: `OutcomesMap.tsx`.** This is a curated, illustrative 7-row table on the
+services hub, not generated from the `services[]` array — adding 2 rows for the new services would make
+it a 19-row table, working against its own "illustrative snapshot" purpose. Left as-is; flagging this as
+a considered decision rather than an oversight.
+
+**Verification:** `npx tsc --noEmit` clean. `npx eslint .` — 18 errors / 2 warnings, unchanged baseline,
+zero new findings. `npx next build` — clean, 42 routes (up from 40: the 2 new service pages). Ran a local
+production server and used Playwright plus manual screenshot review to confirm: both new pages return
+200, render with the correct group badge (GROW / SCALE), correct `Service` + `BreadcrumbList` + `FAQPage`
+JSON-LD, correct canonical URL, and zero console errors; the services hub correctly renders all 17 cards
+across the three tabs (5 Build, 6 Grow, 6 Scale) in server-rendered, crawlable markup even when a tab is
+not the active one; `sitemap.xml` includes both new routes; the homepage's Build/Grow/Scale section
+reflects the new count; an existing deepened page (`workflow-automation`) still renders correctly; mobile
+(390px) and desktop (1440px) layouts for both new pages match the existing service-page design with no
+visual regressions, including no overlap with the cookie banner or WhatsApp button.

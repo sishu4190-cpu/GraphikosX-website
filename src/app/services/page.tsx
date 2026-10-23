@@ -11,7 +11,7 @@ import { FreeAuditCTA } from "@/components/sections/FreeAuditCTA";
 const PATH = "/services";
 const TITLE = "Services: Build, Grow & Scale Systems | GraphikosX";
 const DESCRIPTION =
-  "15 connected services organised into Build, Grow and Scale: strategy, websites, SEO, content, CRM and AI automation, built as one system.";
+  "17 connected services organised into Build, Grow and Scale: strategy, websites, SEO, AI video content, CRM and AI automation, built as one system.";
 
 export const metadata: Metadata = buildMetadata({ title: TITLE, description: DESCRIPTION, path: PATH });
 

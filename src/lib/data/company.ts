@@ -34,6 +34,18 @@ export const company = {
   },
   logoPath: "/brand/graphikosx-logo.png",
   ogImagePath: "/og/graphikosx-og.png",
+  // City/state-level address only, by deliberate choice — not a full
+  // street address. GraphikosX is a remote-first team (see `description`
+  // above); this exists purely as a trust/locality signal for visitors
+  // and search engines (feeds the Organization schema's `address` field
+  // in schema.ts), not as a physical office visitors would travel to.
+  address: {
+    locality: "Vapi",
+    region: "Gujarat",
+    country: "IN",
+    countryDisplay: "India",
+    display: "Vapi, Gujarat, India",
+  },
 } as const;
 
 export function whatsappLink(message?: string) {
