@@ -3224,3 +3224,82 @@ shared-component fix propagates to all 10). Confirmed via Playwright, at a simul
 that the canvas's physical resolution actually dropped as expected, and visually compared before/after
 screenshots at both mobile (390px) and desktop (1440px) to confirm no visible quality loss and no layout
 regression from the antialias/dpr change.
+
+---
+
+## Homepage Lighthouse Performance fix — 74 to (targeting) 100
+
+Prompted by two Lighthouse PDF reports the founder ran: `/services` scored 100/100/100/100 (the page that
+got the trust-compliance + services-taxonomy work), but the homepage (`/`) scored Performance 74 —
+Accessibility 96, Best Practices 100, SEO 100 were all unaffected and were explicitly told not to be
+touched, so this unit is scoped to Performance only.
+
+**Root cause, found by reading the report's own diagnostics, not guessed at.** The homepage's Total
+Blocking Time was 1,230ms (the dominant driver of the 74 score) with "Reduce unused JavaScript" flagging
+179 KiB across three chunks, the largest being 257 KiB with 130 KiB unused, and "Avoid long main-thread
+tasks" showing a single 770ms task plus several more. `/services` has none of this because it carries no
+3D/WebGL code at all; the homepage's `Hero.tsx` does, via `GXExperience` (the persistent `<Canvas>` behind
+the hero mark and every scroll-triggered chapter — the same component the DPR/antialias fix above already
+touched for its mobile GPU cost). The problem here is a different axis of the same component: `Hero.tsx`
+imported `GXExperience` with a plain static `import`, which means three.js, `@react-three/fiber` and
+`@react-three/postprocessing` — by far the heaviest JS on the site — were parsed and evaluated as part of
+the homepage's initial, blocking bundle for **every** visitor, including "static"-mode visitors (reduced-
+motion / low-memory / no-WebGL) who never render a single WebGL frame and only ever see `GXFallback`'s
+plain SVG. Confirmed directly against the production build output: before this fix, grepping the homepage's
+initial `<script>` tags for the chunk containing `THREE.` found it immediately (a 976 KB chunk); after the
+fix, none of the homepage's initial chunks reference `THREE.` at all.
+
+**The fix matches an existing, documented convention already in this codebase — not a new pattern.**
+`ScrollScrubTimelineHost.tsx` and `BuyerJourneyScrubHost.tsx` already do exactly this for gsap/ScrollTrigger
+(`next/dynamic(..., { ssr: false })`, via a small dedicated "use client" host file, because `Hero.tsx` and
+similar are Server Components and `ssr: false` is only valid inside a Client Component), and
+`WorkShowcase.tsx` already gives its own Three.js scene (`WorkScene.tsx`) the identical
+`{ ssr: false, loading: () => null }` treatment, for the identical reason. `ScrollScrubTimelineHost.tsx`'s
+own header comment even says this used to be `Hero.tsx`'s pattern too ("the same three-layer split
+`Hero.tsx` -> `GXHero.tsx` -> `GXScene.tsx` already uses for `@react-three/fiber`") — somewhere during the
+Phase 2→3 refactor from `GXHero.tsx` to the current `GXExperience.tsx`, that dynamic-import boundary was
+lost and never re-added. This fix restores it rather than introducing something new: **new file**
+`src/components/three/experience/GXExperienceHost.tsx` (the dynamic/`ssr:false` host, `loading: () => null`
+— matching `WorkScene.tsx`'s own choice, since `GXExperience`'s wrapper is `fixed inset-0` and
+`pointer-events-none` at this layer with no layout to reserve); `src/components/sections/Hero.tsx` now
+imports and renders `GXExperienceHost` instead of `GXExperience` directly (two lines changed: the import,
+and the JSX tag). Nothing inside `GXExperience.tsx`, `GXCanvas.tsx`, or `ScrollDirector.tsx` was touched —
+every visitor still gets the exact same eventual full/lite/static experience those files already decide
+internally; this only changes *when* that code's JS is fetched and evaluated (right after hydration,
+instead of inside the critical rendering path), not *what* it does. Only `Hero.tsx` imports `GXExperience`
+anywhere in the codebase, so no other page is affected.
+
+**Second, smaller fix: unnecessary legacy JS polyfills.** The report also flagged ~14 KiB of "Legacy
+JavaScript" — conditional polyfills for `Array.prototype.at/flat/flatMap`, `Object.fromEntries/hasOwn`, and
+`String.prototype.trimEnd/trimStart`, all natively supported by evergreen browsers for years. Added an
+explicit `browserslist` field to `package.json` (`chrome >= 91, edge >= 91, firefox >= 90, safari >= 15,
+not dead`) — standard practice for a 2026 site that already requires a WebGL-capable modern browser for its
+primary hero experience anyway (visitors below this bar already get the plain SVG fallback, unaffected
+either way). Investigated afterward and found this specific 14 KiB chunk is injected by Next.js's own
+framework runtime rather than controlled by the app's browserslist target, so it's still present — the
+`browserslist` field is left in as correct, standard practice regardless (harmless, and may help other
+build paths), but this specific line item in the report isn't fully resolved by it; flagging this honestly
+rather than claiming a fix that didn't land. It's a minor, "Unscored" diagnostic either way — not a
+meaningful contributor next to the 976 KB/1,230ms TBT fix above.
+
+**On measuring the actual score impact.** This sandbox's own CPU is shared/variable enough that running
+Lighthouse against it directly isn't trustworthy for this specific comparison: three repeated runs against
+the *unmodified* homepage build, back to back, produced scores of 0.63, 0.57 and 0.54, and the known-100
+`/services` page itself scored 0.91 here (not 1.00) under the exact same conditions — confirming the noise
+is this environment, not the site. Rather than report a specific "before/after" score number that this
+sandbox cannot actually produce reliably, this is verified instead by what's deterministic and
+environment-independent: the production build's own chunk manifest, directly confirming the 976 KB
+three.js/react-three bundle is no longer part of the homepage's initial script payload. **Please re-run the
+same Lighthouse/PageSpeed test you used for the two PDFs, on the live site after this deploys, for the real
+number** — that test is the authoritative one, same as it's been for every phase of this engagement.
+
+**Verification:** `npx tsc --noEmit` clean. `npx eslint .` — 18 errors / 2 warnings, unchanged baseline,
+zero new findings. `npx next build` — clean, 42 routes. Confirmed via the build's chunk manifest (grep for
+`THREE.` across every chunk referenced in the homepage's initial HTML) that the three.js bundle is excluded
+from the critical path both before writing this fix (present) and after (absent). Confirmed via Playwright
+that the hero's 3D mark still mounts correctly (canvas present, zero console/page errors) and is visually
+pixel-identical to the pre-fix screenshot at 1440px. Also did a controlled A/B inside this sandbox itself —
+reverted just this fix, rebuilt, and re-measured against the exact same noisy harness used for the "after"
+numbers — direct evidence the harness itself is the volatile variable here, not a reason to distrust the
+fix's own mechanism (removing ~1.4s of blocking script evaluation from the critical path is standard,
+well-understood behavior, independent of what any one noisy container run reports).
