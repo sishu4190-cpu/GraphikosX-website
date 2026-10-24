@@ -1,16 +1,15 @@
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { freeAuditHref } from "@/lib/freeAuditUrl";
-import { GXExperienceHost } from "@/components/three/experience/GXExperienceHost";
+import { GXExperience } from "@/components/three/experience/GXExperience";
 import { EyebrowReveal, HeadlineReveal, DescriptionReveal, CTAReveal } from "@/components/motion/AnimatedText";
 
 export function Hero() {
   return (
     <section id="gx-hero-section" className="relative overflow-hidden bg-paper pt-16 pb-24 md:pt-24 md:pb-32">
-      {/* <GXExperienceHost> (mounted once, below) dynamically loads the
-          single persistent 3D canvas for the whole hero (ssr:false, see
-          GXExperienceHost.tsx for why) — it positions itself over whichever
-          of these two anchor divs is currently laid out, rather than each
+      {/* <GXExperience> (mounted once, below) is the single persistent 3D
+          canvas for the whole hero — it positions itself over whichever of
+          these two anchor divs is currently laid out, rather than each
           layout mounting its own canvas the way GXHero.tsx used to. See
           GXExperience.tsx's header comment for the full reasoning.
 
@@ -70,7 +69,7 @@ export function Hero() {
       </div>
 
       {/* Mounted once — see the comment above the desktop anchor div. */}
-      <GXExperienceHost />
+      <GXExperience />
     </section>
   );
 }
