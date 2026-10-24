@@ -473,7 +473,7 @@ export const serviceDetails: Record<string, ServiceDetail> = {
     approach: [
       { phase: "Discover", description: "Understand what raw material already exists and what the publishing calendar actually needs from it." },
       { phase: "Audit", description: "Review existing footage and recordings for what is usable, and identify gaps the publishing plan has no source material for." },
-      { phase: "Strategize", description: "Define which formats (short-form, captioned clips, repurposed long-form) this source material should become, and for which platforms." },
+      { phase: "Strategize", description: "Define which formats, short-form, captioned clips, repurposed long-form, this source material should become, and for which platforms." },
       { phase: "Execute", description: "Edit, caption and produce the content, using AI-assisted tools to generate more variations from the same source footage." },
       { phase: "Optimize", description: "Track which formats and cuts actually perform, and shift production time toward what's working." },
     ],
@@ -485,7 +485,7 @@ export const serviceDetails: Record<string, ServiceDetail> = {
     ],
     outcomeHeadline: "Production Velocity",
     outcomeBody:
-      "The realistic outcome is not better footage. It's more usable output from the footage that already exists. A single recording stops being one unpublished file and starts being a week or two of publishable content, which is what actually keeps a content calendar consistent instead of sporadic.",
+      "The realistic outcome is not better footage, it's more usable output from the footage that already exists. A single recording stops being one unpublished file and starts being a week or two of publishable content, which is what actually keeps a content calendar consistent instead of sporadic.",
     ecosystem: ["content-production", "social-media-management", "brand-strategy"],
     industries: ["fitness-wellness", "real-estate", "education-coaching"],
     faqs: [
@@ -604,7 +604,7 @@ export const serviceDetails: Record<string, ServiceDetail> = {
     definitionAnswer:
       "AI chatbot setup is building a chat assistant for a website or WhatsApp that can answer common questions from the business's own information, capture and qualify leads, and hand the conversation off to a person when the question needs judgment the bot doesn't have.",
     definitionExpansion:
-      "The scope is deliberately bounded: the bot answers from what the business actually provides (FAQs, service information, availability). It does not improvise answers about things it hasn't been told, and there is always a clear path to a person for anything outside that scope. The goal is a faster, organized first response, not replacing the conversations that need an actual person.",
+      "The scope is deliberately bounded: the bot answers from what the business actually provides, FAQs, service information, availability, it does not improvise answers about things it hasn't been told, and there is always a clear path to a person for anything outside that scope. The goal is a faster, organized first response, not replacing the conversations that need an actual person.",
     whenYouNeedIt: [
       "Enquiries regularly arrive outside working hours with no response until the next business day.",
       "The same handful of questions get asked repeatedly before someone from the team can answer them individually.",
